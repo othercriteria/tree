@@ -1,0 +1,127 @@
+@font-face {
+  font-family: "bau";
+  src: url("http://office-for.com/lib/etc/bau/bauregular.otf");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "bau";
+  src: url("http://office-for.com/lib/etc/bau/bauregularitalic.otf");
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: "bau";
+  src: url("http://office-for.com/lib/etc/bau/baumedium.otf");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "bau";
+  src: url("http://office-for.com/lib/etc/bau/baumediumitalic.otf");
+  font-weight: 500;
+  font-style: italic;
+}
+@font-face {
+  font-family: "bau";
+  src: url("http://office-for.com/lib/etc/bau/baubold.otf");
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "bau";
+  src: url("http://office-for.com/lib/etc/bau/baubolditalic.otf");
+  font-weight: 600;
+  font-style: italic;
+}
+body,
+html {
+  font-size: 18px;
+  font-family: bau;
+  font-weight: 400;
+  line-height: 1.4rem;
+}
+a {
+  color: #000;
+  text-decoration: none;
+  border-bottom: 2px solid #000;
+  display: inline-block;
+  line-height: 0.8rem;
+}
+body {
+  font-size: 0.9rem;
+}
+hr {
+  display: inline-block;
+  width: 6rem;
+  border: 0;
+  border-top: 2px solid #f4f4f4;
+}
+h2,
+h3 {
+  margin: 0;
+  margin-top: 1rem;
+}
+h2,
+h3,
+strong {
+  font-weight: 500;
+}
+h2 code,
+h3 code {
+  font-size: inherit;
+  background-color: #f4f4f4;
+  padding: 0.3rem;
+}
+pre {
+  background-color: #f5f5f5;
+  padding: 0.3rem;
+  margin-left: -0.3rem;
+}
+code {
+  font-family: "source-code-pro";
+  font-size: 0.8rem;
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+li:before {
+  content: "+";
+  padding-right: 0.3rem;
+  font-family: "source-code-pro";
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+#nav,
+#cont {
+  position: absolute;
+  width: 42rem;
+  left: 50%;
+  margin-left: -21rem;
+}
+#nav {
+  height: 4rem;
+}
+#cont {
+  top: 6rem;
+}
+#nav > div {
+  height: 1.2rem;
+}
+#nav a {
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 0.8rem;
+}
+#bred {
+  font-size: 0.6rem;
+}
+#bred a {
+  margin-right: 0.3rem;
+  margin-left: 0.3rem;
+}
+.short {
+  width: 32rem;
+}

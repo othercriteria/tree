@@ -1,0 +1,20 @@
+::
+/?    314
+/=    gas    /$    fuel
+/=    pal    /:    /===/pub    /%  /psal/
+::
+::::
+  ::
+//    /%%/util
+::
+[util=. +>]
+::
+!:
+::::
+  ::
+^-  json
+=+  ~(. util gas)
+%-  jobe  :~
+  kids/[%a (turn get-kids |=(a=span s/a))]
+  body/(jape (many:poxo +.pal ~))
+==

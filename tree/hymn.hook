@@ -1,0 +1,44 @@
+::
+/?    314
+/=    gas    /$    fuel
+/=    pal    /:    /===/pub    /%  /psal/
+::
+::::
+  ::
+//    /%%/util
+::
+[util=. +>]
+::
+!:
+::::
+  ::
+=+  ~(. util gas)
+;html
+  ;head
+    ;title: 'tree'
+    ;link(type "text/css", rel "stylesheet", href "/gen/main/pub/src/tree/main.css");
+    ;script(type "text/javascript", src "//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js");
+    ;script(type "text/javascript", src "//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js");
+    ;script(type "text/javascript", src "//cdnjs.cloudflare.com/ajax/libs/react/0.12.2/react.min.js");
+    ;script(type "text/javascript", src "//use.typekit.net/fkv0sjk.js");
+    ;script(type "text/javascript"):'''
+                                    try{Typekit.load();}catch(e){}
+                                    '''
+  ==
+  ;body
+    ;script(type "text/javascript"):"""
+                                    window.tree = \{}
+                                    window.tree.up = {(pojo (parent-json get-parent))}
+                                    window.tree.kids = {(pojo (kids-json get-kids))}
+                                    window.tree.bred = {(pojo (bread-json get-bread))}
+                                    """
+    ;textarea#cont-raw(style "display:none"): *{+.pal}
+    ;div#nav;
+    ::  ;div#bred: *{(turn get-bread render-bread)}
+    ::  ;div#up: +{(get-link get-parent ;"UP")}
+    ::  ;div#kids: *{get-down}
+    ::==
+    ;div#cont;
+    ;script(type "text/javascript", src "/gen/main/pub/src/tree/main.js");
+  ==
+==
