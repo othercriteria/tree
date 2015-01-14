@@ -13,10 +13,7 @@ TreeStore = _.extend EventEmitter.prototype, {
 
   emitChange: -> @emit 'change'
 
-  pathToArr: (_path) ->
-    _path = _path.split "/"
-    _path.shift()
-    _path
+  pathToArr: (_path) -> _path.split "/"
 
   pathToObj:(_path,_obj,kids) ->
     _path = @pathToArr _path
@@ -27,25 +24,29 @@ TreeStore = _.extend EventEmitter.prototype, {
         _obj[kids[i]] = {}
 
   getTree: (_path) ->
-    _path = @pathToArr _path
+    tree = _tree
     for i in [0.._path.length-1]
-      tree = _tree[_path[i]]
+      tree = tree[_path[i]]
     tree
 
-  loadPath: (path,body,kids) ->
-    _curr = path
+  setCurr: (path) -> _curr = path
 
+  getCurr: -> "/"+_curr
+
+  loadPath: (path,body,kids,crum) ->
     _cont[path] = body
 
     _obj = {}
     @pathToObj path,_obj,kids
     _.merge _tree,_obj
 
+  getKids: -> _.keys @getTree _curr.split("/")
+
   getSiblings: ->
     curr = _curr.split("/")
     curr.pop()
     if curr.length isnt 0
-      @getTree curr.join("/")
+      @getTree curr
     else
       {}
 
@@ -81,7 +82,14 @@ TreeStore = _.extend EventEmitter.prototype, {
     else
       null
 
-  getCrumbs: -> ['a','b','c']
+  getCrumbs: ->
+    _path = @pathToArr _curr
+    crum = ""
+    crums = []
+    for k,v of _path
+      crum += "/"+v
+      crums.push {name:v,path:crum}
+    crums
 
   getBody: -> if _cont[_curr] then _cont[_curr] else ""
 }
@@ -93,6 +101,8 @@ TreeStore.dispatchToken = MessageDispatcher.register (payload) ->
     when 'path-load'
       TreeStore.loadPath action.path,action.body,action.kids
       TreeStore.emitChange()
-
+    when 'set-curr'
+      TreeStore.setCurr action.path
+      TreeStore.emitChange()
 
 module.exports = TreeStore

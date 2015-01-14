@@ -11,6 +11,12 @@ module.exports = {
       body: body,
       kids: kids
     });
+  },
+  setCurr: function(path) {
+    return TreeDispatcher.handleViewAction({
+      type: "set-curr",
+      path: path
+    });
   }
 };
 
@@ -28,10 +34,12 @@ _ref = [React.DOM.div, React.DOM.a], div = _ref[0], a = _ref[1];
 module.exports = recl({
   stateFromStore: function() {
     return {
-      crumbs: TreeStore.getCrumbs(),
+      crum: TreeStore.getCrumbs(),
+      curr: TreeStore.getCurr(),
       pare: TreeStore.getPare(),
       next: TreeStore.getNext(),
-      prev: TreeStore.getPrev()
+      prev: TreeStore.getPrev(),
+      kids: TreeStore.getKids()
     };
   },
   componentDidMount: function() {
@@ -44,22 +52,58 @@ module.exports = recl({
     return this.setState(this.stateFromStore());
   },
   render: function() {
-    var parts;
+    var crums, curr, kids, parts, _parts;
     parts = [];
     if (this.state.pare) {
-      parts.push(a({
-        href: "#" + this.state.pare
-      }, "up"));
+      parts.push(div({
+        id: "up"
+      }, [
+        a({
+          href: this.state.pare,
+          className: "arow-up"
+        }, "")
+      ]));
     }
-    if (this.state.prev) {
-      parts.push(a({
-        href: "#" + this.state.prev
-      }, "prev"));
+    if (this.state.prev || this.state.next) {
+      _parts = [];
+      if (this.state.prev) {
+        _parts.push(a({
+          href: this.state.prev,
+          className: "arow-prev"
+        }, ""));
+      }
+      if (this.state.next) {
+        _parts.push(a({
+          href: this.state.next,
+          className: "arow-next"
+        }, ""));
+      }
+      parts.push(div({
+        id: "sibs"
+      }, _parts));
     }
-    if (this.state.next) {
-      parts.push(a({
-        href: "#" + this.state.next
-      }, "next"));
+    if (this.state.crum) {
+      crums = _.map(this.state.crum, function(i) {
+        return [
+          div({}, "/"), a({
+            href: i.path
+          }, i.name)
+        ];
+      });
+      parts.push(div({
+        id: "bred"
+      }, crums));
+    }
+    if (this.state.kids) {
+      curr = this.state.curr;
+      kids = _.map(this.state.kids, function(i) {
+        return a({
+          href: curr + "/" + i
+        }, i);
+      });
+      parts.push(div({
+        id: "kids"
+      }, kids));
     }
     return div({}, parts);
   }
@@ -132,7 +176,7 @@ module.exports = copyProperties(new Dispatcher(), {
 
 
 },{"flux":"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/flux/index.js","react/lib/copyProperties":"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/react/lib/copyProperties.js"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/main.coffee":[function(require,module,exports){
-var AnchorComponent, BodyComponent, TreeActions, rend;
+var AnchorComponent, BodyComponent, TreeActions, TreePersistence, rend;
 
 rend = React.renderComponent;
 
@@ -142,18 +186,37 @@ BodyComponent = require('./components/BodyComponent.coffee');
 
 TreeActions = require('./actions/TreeActions.coffee');
 
+TreePersistence = require('./persistence/TreePersistence.coffee');
+
 $(function() {
-  var $body, frag;
+  var $body, frag, path, up;
   $body = $('body');
+  path = window.location.pathname.split("/").slice(4);
+  frag = path.join("/");
+  path.pop();
+  up = path.join("/") + ".json";
+  TreeActions.setCurr(frag);
+  TreeActions.loadPath(frag, $('#cont-raw').text(), window.tree.kids);
+  TreePersistence.get(path.join("/") + ".json");
+  $('body').on('click', 'a', function(e) {
+    var href;
+    href = $(e.target).attr('href');
+    if (href[0] === "/") {
+      href = href.slice(1);
+      e.preventDefault();
+      e.stopPropagation();
+      return TreePersistence.get(href + ".json", function(err, res) {
+        return TreeActions.setCurr(href);
+      });
+    }
+  });
   rend(AnchorComponent({}, ""), $('#nav')[0]);
-  rend(BodyComponent({}, ""), $('#cont')[0]);
-  frag = window.location.pathname.split("/").slice(3).join("/");
-  return TreeActions.loadPath(frag, $('#cont-raw').text(), window.tree.kids);
+  return rend(BodyComponent({}, ""), $('#cont')[0]);
 });
 
 
 
-},{"./actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","./components/AnchorComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/AnchorComponent.coffee","./components/BodyComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/flux/index.js":[function(require,module,exports){
+},{"./actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","./components/AnchorComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/AnchorComponent.coffee","./components/BodyComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee","./persistence/TreePersistence.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/persistence/TreePersistence.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/flux/index.js":[function(require,module,exports){
 /**
  * Copyright (c) 2014, Facebook, Inc.
  * All rights reserved.
@@ -530,7 +593,25 @@ console.warn(
 );
 
 }).call(this,require('_process'))
-},{"_process":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee":[function(require,module,exports){
+},{"_process":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/persistence/TreePersistence.coffee":[function(require,module,exports){
+var TreeActions;
+
+TreeActions = require('../actions/TreeActions.coffee');
+
+module.exports = {
+  get: function(path, cb) {
+    return $.get("/gen/main/tree/" + path, {}, function(data) {
+      TreeActions.loadPath(path.replace(".json", ""), data.body, data.kids);
+      if (cb) {
+        return cb(null, data);
+      }
+    });
+  }
+};
+
+
+
+},{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee":[function(require,module,exports){
 var EventEmitter, MessageDispatcher, TreeStore, _cont, _curr, _tree;
 
 EventEmitter = require('events').EventEmitter;
@@ -554,9 +635,7 @@ TreeStore = _.extend(EventEmitter.prototype, {
     return this.emit('change');
   },
   pathToArr: function(_path) {
-    _path = _path.split("/");
-    _path.shift();
-    return _path;
+    return _path.split("/");
   },
   pathToObj: function(_path, _obj, kids) {
     var i, _i, _j, _ref, _ref1, _results;
@@ -574,26 +653,34 @@ TreeStore = _.extend(EventEmitter.prototype, {
   },
   getTree: function(_path) {
     var i, tree, _i, _ref;
-    _path = this.pathToArr(_path);
+    tree = _tree;
     for (i = _i = 0, _ref = _path.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-      tree = _tree[_path[i]];
+      tree = tree[_path[i]];
     }
     return tree;
   },
-  loadPath: function(path, body, kids) {
+  setCurr: function(path) {
+    return _curr = path;
+  },
+  getCurr: function() {
+    return "/" + _curr;
+  },
+  loadPath: function(path, body, kids, crum) {
     var _obj;
-    _curr = path;
     _cont[path] = body;
     _obj = {};
     this.pathToObj(path, _obj, kids);
     return _.merge(_tree, _obj);
+  },
+  getKids: function() {
+    return _.keys(this.getTree(_curr.split("/")));
   },
   getSiblings: function() {
     var curr;
     curr = _curr.split("/");
     curr.pop();
     if (curr.length !== 0) {
-      return this.getTree(curr.join("/"));
+      return this.getTree(curr);
     } else {
       return {};
     }
@@ -637,7 +724,19 @@ TreeStore = _.extend(EventEmitter.prototype, {
     }
   },
   getCrumbs: function() {
-    return ['a', 'b', 'c'];
+    var crum, crums, k, v, _path;
+    _path = this.pathToArr(_curr);
+    crum = "";
+    crums = [];
+    for (k in _path) {
+      v = _path[k];
+      crum += "/" + v;
+      crums.push({
+        name: v,
+        path: crum
+      });
+    }
+    return crums;
   },
   getBody: function() {
     if (_cont[_curr]) {
@@ -654,6 +753,9 @@ TreeStore.dispatchToken = MessageDispatcher.register(function(payload) {
   switch (action.type) {
     case 'path-load':
       TreeStore.loadPath(action.path, action.body, action.kids);
+      return TreeStore.emitChange();
+    case 'set-curr':
+      TreeStore.setCurr(action.path);
       return TreeStore.emitChange();
   }
 });

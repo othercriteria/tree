@@ -1,10 +1,7 @@
 TreeActions = require '../actions/TreeActions.coffee'
 
 module.exports =
-  get: (path) ->
-    $.get path, {}, (data) ->
-      try
-        data = JSON.parse data
-      catch e
-        data = {body:"parsing error",kids:[]}
-      TreeActions.loadPath path,data.body,data.kids
+  get: (path,cb) ->
+    $.get "/gen/main/tree/"+path, {}, (data) ->
+      TreeActions.loadPath path.replace(".json", ""),data.body,data.kids
+      if cb then cb null,data

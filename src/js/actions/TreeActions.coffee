@@ -7,3 +7,7 @@ module.exports =
       path:path
       body:body
       kids:kids
+  setCurr: (path) ->
+  	TreeDispatcher.handleViewAction
+  		type:"set-curr"
+  		path:path
