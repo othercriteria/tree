@@ -11,20 +11,11 @@ $ ->
   path = window.location.pathname.split("/").slice(4)
   frag = path.join("/")
   path.pop()
-  up = path.join("/")+".json"
+  up = path.join("/")
 
   TreeActions.setCurr frag
   TreeActions.loadPath frag,$('#cont-raw').text(),window.tree.kids
-  TreePersistence.get path.join("/")+".json"
-
-  $('body').on 'click', 'a', (e) ->
-    href = $(e.target).attr 'href'
-    if href[0] is "/"
-      href = href.slice(1)
-      e.preventDefault()
-      e.stopPropagation()
-      TreePersistence.get href+".json", (err,res) ->
-        TreeActions.setCurr href
+  TreeActions.getPath up
 
   rend (AnchorComponent {}, ""),$('#nav')[0]
   rend (BodyComponent {}, ""),$('#cont')[0]

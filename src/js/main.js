@@ -1,7 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee":[function(require,module,exports){
-var TreeDispatcher;
+var TreeDispatcher, TreePersistence;
 
 TreeDispatcher = require('../dispatcher/Dispatcher.coffee');
+
+TreePersistence = require('../persistence/TreePersistence.coffee');
 
 module.exports = {
   loadPath: function(path, body, kids) {
@@ -10,6 +12,19 @@ module.exports = {
       path: path,
       body: body,
       kids: kids
+    });
+  },
+  getPath: function(path, cb) {
+    var loadPath;
+    loadPath = this.loadPath;
+    if (path.slice(-1) === "/") {
+      path = path.slice(0, -1);
+    }
+    return TreePersistence.get(path, function(err, res) {
+      loadPath(path, res.body, res.kids);
+      if (cb) {
+        return cb(err, res);
+      }
     });
   },
   setCurr: function(path) {
@@ -22,10 +37,12 @@ module.exports = {
 
 
 
-},{"../dispatcher/Dispatcher.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/dispatcher/Dispatcher.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/AnchorComponent.coffee":[function(require,module,exports){
-var TreeStore, a, div, recl, _ref;
+},{"../dispatcher/Dispatcher.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/dispatcher/Dispatcher.coffee","../persistence/TreePersistence.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/persistence/TreePersistence.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/AnchorComponent.coffee":[function(require,module,exports){
+var TreeActions, TreeStore, a, div, recl, _ref;
 
 TreeStore = require('../stores/TreeStore.coffee');
+
+TreeActions = require('../actions/TreeActions.coffee');
 
 recl = React.createClass;
 
@@ -39,11 +56,46 @@ module.exports = recl({
       pare: TreeStore.getPare(),
       next: TreeStore.getNext(),
       prev: TreeStore.getPrev(),
-      kids: TreeStore.getKids()
+      kids: TreeStore.getKids(),
+      tree: TreeStore.getTree([]),
+      cont: TreeStore.getCont()
     };
   },
+  checkPath: function(path) {
+    return this.state.cont[path] != null;
+  },
+  setPath: function(href) {
+    history.pushState({}, "", "/gen/main/tree/" + href);
+    return TreeActions.setCurr(href);
+  },
+  goTo: function(path) {
+    if (this.checkPath(path)) {
+      return this.setPath(path);
+    } else {
+      return TreeActions.getPath(path, (function(_this) {
+        return function() {
+          return _this.setPath(path);
+        };
+      })(this));
+    }
+  },
   componentDidMount: function() {
-    return TreeStore.addChangeListener(this._onChangeStore);
+    TreeStore.addChangeListener(this._onChangeStore);
+    return $('body').on('click', 'a', (function(_this) {
+      return function(e) {
+        var href;
+        href = $(e.target).attr('href');
+        if (href[0] === "/") {
+          href = href.slice(1);
+          e.preventDefault();
+          e.stopPropagation();
+          return _this.goTo(href);
+        }
+      };
+    })(this));
+  },
+  componentWillUnmount: function() {
+    return $('body').off('click', 'a');
   },
   getInitialState: function() {
     return this.stateFromStore();
@@ -111,7 +163,7 @@ module.exports = recl({
 
 
 
-},{"../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee":[function(require,module,exports){
+},{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee":[function(require,module,exports){
 var TreeStore, div, input, recl, textarea, _ref;
 
 TreeStore = require('../stores/TreeStore.coffee');
@@ -194,22 +246,10 @@ $(function() {
   path = window.location.pathname.split("/").slice(4);
   frag = path.join("/");
   path.pop();
-  up = path.join("/") + ".json";
+  up = path.join("/");
   TreeActions.setCurr(frag);
   TreeActions.loadPath(frag, $('#cont-raw').text(), window.tree.kids);
-  TreePersistence.get(path.join("/") + ".json");
-  $('body').on('click', 'a', function(e) {
-    var href;
-    href = $(e.target).attr('href');
-    if (href[0] === "/") {
-      href = href.slice(1);
-      e.preventDefault();
-      e.stopPropagation();
-      return TreePersistence.get(href + ".json", function(err, res) {
-        return TreeActions.setCurr(href);
-      });
-    }
-  });
+  TreeActions.getPath(up);
   rend(AnchorComponent({}, ""), $('#nav')[0]);
   return rend(BodyComponent({}, ""), $('#cont')[0]);
 });
@@ -600,8 +640,7 @@ TreeActions = require('../actions/TreeActions.coffee');
 
 module.exports = {
   get: function(path, cb) {
-    return $.get("/gen/main/tree/" + path, {}, function(data) {
-      TreeActions.loadPath(path.replace(".json", ""), data.body, data.kids);
+    return $.get("/gen/main/tree/" + path + ".json", {}, function(data) {
       if (cb) {
         return cb(null, data);
       }
@@ -643,7 +682,7 @@ TreeStore = _.extend(EventEmitter.prototype, {
     for (i = _i = 0, _ref = _path.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
       _obj = _obj[_path[i]] = {};
     }
-    if (kids) {
+    if ((kids != null ? kids.length : void 0) > 0) {
       _results = [];
       for (i = _j = 0, _ref1 = kids.length - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
         _results.push(_obj[kids[i]] = {});
@@ -654,8 +693,10 @@ TreeStore = _.extend(EventEmitter.prototype, {
   getTree: function(_path) {
     var i, tree, _i, _ref;
     tree = _tree;
-    for (i = _i = 0, _ref = _path.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-      tree = tree[_path[i]];
+    if (_path.length > 0) {
+      for (i = _i = 0, _ref = _path.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        tree = tree[_path[i]];
+      }
     }
     return tree;
   },
@@ -664,6 +705,9 @@ TreeStore = _.extend(EventEmitter.prototype, {
   },
   getCurr: function() {
     return "/" + _curr;
+  },
+  getCont: function() {
+    return _cont;
   },
   loadPath: function(path, body, kids, crum) {
     var _obj;

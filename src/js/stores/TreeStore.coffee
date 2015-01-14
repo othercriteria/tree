@@ -19,19 +19,22 @@ TreeStore = _.extend EventEmitter.prototype, {
     _path = @pathToArr _path
     for i in [0.._path.length-1]
       _obj = _obj[_path[i]] = {}
-    if kids
+    if kids?.length > 0
       for i in [0..kids.length-1]
         _obj[kids[i]] = {}
 
   getTree: (_path) ->
     tree = _tree
-    for i in [0.._path.length-1]
-      tree = tree[_path[i]]
+    if _path.length > 0
+      for i in [0.._path.length-1]
+        tree = tree[_path[i]]
     tree
 
   setCurr: (path) -> _curr = path
 
   getCurr: -> "/"+_curr
+
+  getCont: -> _cont
 
   loadPath: (path,body,kids,crum) ->
     _cont[path] = body
@@ -40,7 +43,8 @@ TreeStore = _.extend EventEmitter.prototype, {
     @pathToObj path,_obj,kids
     _.merge _tree,_obj
 
-  getKids: -> _.keys @getTree _curr.split("/")
+  getKids: ->
+    _.keys @getTree _curr.split("/")
 
   getSiblings: ->
     curr = _curr.split("/")
