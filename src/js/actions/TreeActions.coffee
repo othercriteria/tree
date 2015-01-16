@@ -3,6 +3,9 @@ TreePersistence   = require '../persistence/TreePersistence.coffee'
 
 module.exports =
   loadPath: (path,body,kids) ->
+    TreeDispatcher.handleViewAction
+      type:"set-load"
+      load:false
     TreeDispatcher.handleServerAction
       type:"path-load"
       path:path
@@ -10,6 +13,9 @@ module.exports =
       kids:kids
 
   getPath: (path,cb) ->
+    TreeDispatcher.handleViewAction
+      type:"set-load"
+      load:true
     loadPath = @loadPath
     if path.slice(-1) is "/" then path = path.slice(0,-1)
     TreePersistence.get path,(err,res) ->

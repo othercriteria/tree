@@ -44,9 +44,12 @@ html {
 a {
   color: #000;
   text-decoration: none;
-  border-bottom: 2px solid #000;
+  border-bottom: 1px solid #000;
   display: inline-block;
   line-height: 0.8rem;
+}
+#nav a {
+  border-bottom: 2px solid #000;
 }
 body {
   font-size: 0.9rem;
@@ -64,9 +67,19 @@ h3 {
 }
 h2,
 h3,
+h4,
 strong {
   font-weight: 500;
 }
+h4 {
+  margin-bottom: 0.3rem;
+}
+h5 {
+  font-style: italic;
+  font-weight: 200;
+  margin: 0;
+}
+h1 code,
 h2 code,
 h3 code {
   font-size: inherit;
@@ -104,7 +117,25 @@ li:before {
   height: 4rem;
 }
 #cont {
-  top: 6rem;
+  top: 3rem;
+}
+#load {
+  display: none;
+}
+#load.load {
+  display: inline-block;
+  font-weight: 500;
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  width: 5rem;
+  margin-left: 21rem;
+  background-color: #000;
+  color: #fff;
+  padding: 0.3rem;
+  text-align: center;
+  font-size: 0.6rem;
+  letter-spacing: 0.1rem;
 }
 #nav > div {
   height: 1.2rem;
@@ -120,27 +151,28 @@ li:before {
   height: 0;
   margin-left: -2rem;
 }
-.arow-up,
-.arow-next,
-.arow-prev {
+#dpad {
+  float: left;
+  margin-left: -4rem;
+  padding-top: 0.4rem;
+}
+#nav .arow-up,
+#nav .arow-next,
+#nav .arow-prev {
   background-repeat: no-repeat;
   width: 1.2rem;
   height: 1.2rem;
   border: none;
 }
 .arow-up {
-  background-image: url("http://office-for.com/lib/etc/arow/up.png");
-  background-size: 1rem;
+  background-image: url("http://office-for.com/lib/etc/arow/a-up.png");
 }
 .arow-next {
-  background-image: url("http://office-for.com/lib/etc/arow/right.png");
-  background-size: 0.6rem;
-  float: right;
+  background-image: url("http://office-for.com/lib/etc/arow/a-right.png");
   margin-right: -2rem;
 }
 .arow-prev {
-  background-image: url("http://office-for.com/lib/etc/arow/left.png");
-  background-size: 0.6rem;
+  background-image: url("http://office-for.com/lib/etc/arow/a-left.png");
 }
 #bred {
   font-size: 0.6rem;

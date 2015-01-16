@@ -6,6 +6,7 @@ recl = React.createClass
 module.exports = recl
   stateFromStore: -> 
     body:TreeStore.getBody()
+    load:TreeStore.getLoad()
   
   componentDidMount: -> 
     TreeStore.addChangeListener @_onChangeStore
@@ -21,4 +22,10 @@ module.exports = recl
     $("#body").html @state.body
 
   render: ->
-    div {id:'body'}, ""
+    parts = []
+
+    k = if @state.load then "load" else ""
+    parts.push (div {id:"load",className:k}, "LOADING")
+    parts.push (div {id:'body'}, "")
+
+    (div {}, parts)

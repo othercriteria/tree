@@ -7,6 +7,10 @@ TreePersistence = require('../persistence/TreePersistence.coffee');
 
 module.exports = {
   loadPath: function(path, body, kids) {
+    TreeDispatcher.handleViewAction({
+      type: "set-load",
+      load: false
+    });
     return TreeDispatcher.handleServerAction({
       type: "path-load",
       path: path,
@@ -16,6 +20,10 @@ module.exports = {
   },
   getPath: function(path, cb) {
     var loadPath;
+    TreeDispatcher.handleViewAction({
+      type: "set-load",
+      load: true
+    });
     loadPath = this.loadPath;
     if (path.slice(-1) === "/") {
       path = path.slice(0, -1);
@@ -58,14 +66,17 @@ module.exports = recl({
       prev: TreeStore.getPrev(),
       kids: TreeStore.getKids(),
       tree: TreeStore.getTree([]),
-      cont: TreeStore.getCont()
+      cont: TreeStore.getCont(),
+      url: window.location.pathname
     };
   },
   checkPath: function(path) {
     return this.state.cont[path] != null;
   },
-  setPath: function(href) {
-    history.pushState({}, "", "/gen/main/tree/" + href);
+  setPath: function(href, hist) {
+    if (hist !== false) {
+      history.pushState({}, "", "/gen/main/tree/" + href);
+    }
     return TreeActions.setCurr(href);
   },
   goTo: function(path) {
@@ -79,8 +90,14 @@ module.exports = recl({
       })(this));
     }
   },
+  checkURL: function() {
+    if (this.state.url !== window.location.pathname) {
+      return this.setPath(window.location.pathname.replace("/gen/main/tree/", ""), false);
+    }
+  },
   componentDidMount: function() {
     TreeStore.addChangeListener(this._onChangeStore);
+    setInterval(this.checkURL, 100);
     return $('body').on('click', 'a', (function(_this) {
       return function(e) {
         var href;
@@ -107,31 +124,27 @@ module.exports = recl({
     var crums, curr, kids, parts, _parts;
     parts = [];
     if (this.state.pare) {
-      parts.push(div({
-        id: "up"
-      }, [
-        a({
-          href: this.state.pare,
-          className: "arow-up"
-        }, "")
-      ]));
-    }
-    if (this.state.prev || this.state.next) {
       _parts = [];
-      if (this.state.prev) {
-        _parts.push(a({
-          href: this.state.prev,
-          className: "arow-prev"
-        }, ""));
-      }
-      if (this.state.next) {
-        _parts.push(a({
-          href: this.state.next,
-          className: "arow-next"
-        }, ""));
+      _parts.push(a({
+        href: this.state.pare,
+        className: "arow-up"
+      }, ""));
+      if (this.state.prev || this.state.next) {
+        if (this.state.prev) {
+          _parts.push(a({
+            href: this.state.prev,
+            className: "arow-prev"
+          }, ""));
+        }
+        if (this.state.next) {
+          _parts.push(a({
+            href: this.state.next,
+            className: "arow-next"
+          }, ""));
+        }
       }
       parts.push(div({
-        id: "sibs"
+        id: "dpad"
       }, _parts));
     }
     if (this.state.crum) {
@@ -175,7 +188,8 @@ _ref = [React.DOM.div, React.DOM.input, React.DOM.textarea], div = _ref[0], inpu
 module.exports = recl({
   stateFromStore: function() {
     return {
-      body: TreeStore.getBody()
+      body: TreeStore.getBody(),
+      load: TreeStore.getLoad()
     };
   },
   componentDidMount: function() {
@@ -195,9 +209,17 @@ module.exports = recl({
     return $("#body").html(this.state.body);
   },
   render: function() {
-    return div({
+    var k, parts;
+    parts = [];
+    k = this.state.load ? "load" : "";
+    parts.push(div({
+      id: "load",
+      className: k
+    }, "LOADING"));
+    parts.push(div({
       id: 'body'
-    }, "");
+    }, ""));
+    return div({}, parts);
   }
 });
 
@@ -651,7 +673,7 @@ module.exports = {
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee":[function(require,module,exports){
-var EventEmitter, MessageDispatcher, TreeStore, _cont, _curr, _tree;
+var EventEmitter, MessageDispatcher, TreeStore, _cont, _curr, _load, _tree;
 
 EventEmitter = require('events').EventEmitter;
 
@@ -660,6 +682,8 @@ MessageDispatcher = require('../dispatcher/Dispatcher.coffee');
 _tree = {};
 
 _cont = {};
+
+_load = false;
 
 _curr = "";
 
@@ -709,6 +733,12 @@ TreeStore = _.extend(EventEmitter.prototype, {
   getCont: function() {
     return _cont;
   },
+  setLoad: function(load) {
+    return _load = load;
+  },
+  getLoad: function() {
+    return _load;
+  },
   loadPath: function(path, body, kids, crum) {
     var _obj;
     _cont[path] = body;
@@ -738,9 +768,9 @@ TreeStore = _.extend(EventEmitter.prototype, {
       par = _curr.split("/");
       key = par.pop();
       ind = sibs.indexOf(key);
-      win = ind - 1 > 0 ? sibs[ind - 1] : sibs[sibs.length - 1];
+      win = ind - 1 >= 0 ? sibs[ind - 1] : sibs[sibs.length - 1];
       par.push(win);
-      return par.join("/");
+      return "/" + par.join("/");
     }
   },
   getNext: function() {
@@ -754,7 +784,7 @@ TreeStore = _.extend(EventEmitter.prototype, {
       ind = sibs.indexOf(key);
       win = ind + 1 < sibs.length ? sibs[ind + 1] : sibs[0];
       par.push(win);
-      return par.join("/");
+      return "/" + par.join("/");
     }
   },
   getPare: function() {
@@ -800,6 +830,9 @@ TreeStore.dispatchToken = MessageDispatcher.register(function(payload) {
       return TreeStore.emitChange();
     case 'set-curr':
       TreeStore.setCurr(action.path);
+      return TreeStore.emitChange();
+    case 'set-load':
+      TreeStore.setLoad(action.load);
       return TreeStore.emitChange();
   }
 });

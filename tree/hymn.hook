@@ -34,10 +34,6 @@
                                     """
     ;textarea#cont-raw(style "display:none"): *{+.pal}
     ;div#nav;
-    ::  ;div#bred: *{(turn get-bread render-bread)}
-    ::  ;div#up: +{(get-link get-parent ;"UP")}
-    ::  ;div#kids: *{get-down}
-    ::==
     ;div#cont;
     ;script(type "text/javascript", src "/gen/main/pub/src/tree/main.js");
   ==

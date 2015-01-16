@@ -4,6 +4,7 @@ MessageDispatcher = require '../dispatcher/Dispatcher.coffee'
 
 _tree = {}
 _cont = {}
+_load = false
 _curr = ""
 
 TreeStore = _.extend EventEmitter.prototype, {
@@ -36,6 +37,10 @@ TreeStore = _.extend EventEmitter.prototype, {
 
   getCont: -> _cont
 
+  setLoad: (load) -> _load = load
+
+  getLoad: -> _load
+
   loadPath: (path,body,kids,crum) ->
     _cont[path] = body
 
@@ -62,9 +67,9 @@ TreeStore = _.extend EventEmitter.prototype, {
       par = _curr.split "/"
       key = par.pop()
       ind = sibs.indexOf key
-      win = if ind-1 > 0 then sibs[ind-1] else sibs[sibs.length-1]
+      win = if ind-1 >= 0 then sibs[ind-1] else sibs[sibs.length-1]
       par.push win
-      par.join "/"
+      "/"+par.join "/"
 
   getNext: -> 
     sibs = _.keys @getSiblings()
@@ -76,7 +81,7 @@ TreeStore = _.extend EventEmitter.prototype, {
       ind = sibs.indexOf key
       win = if ind+1 < sibs.length then sibs[ind+1] else sibs[0]
       par.push win
-      par.join "/"
+      "/"+par.join "/"
 
   getPare: -> 
     _path = @pathToArr _curr
@@ -107,6 +112,9 @@ TreeStore.dispatchToken = MessageDispatcher.register (payload) ->
       TreeStore.emitChange()
     when 'set-curr'
       TreeStore.setCurr action.path
+      TreeStore.emitChange()
+    when 'set-load'
+      TreeStore.setLoad action.load
       TreeStore.emitChange()
 
 module.exports = TreeStore
