@@ -10,6 +10,10 @@ in `src/css/`:
 
 then copy into your pier:
 
-- `src/js/main.js` and `src/css/main.css` to `pub/src/tree/`
-- `tree/` to `pub/fab/tree/`
-- `stub/` to `pub/`
+- `src/js/main.js` and `src/css/main.css` to `main/pub/src/tree/`
+- `tree/` to `main/tree/`
+- `stub/` to `main/pub/`
+
+## running
+
+accessible at `http://localhost:8444/gen/main/tree`, where `8444` is your pier's http port.
