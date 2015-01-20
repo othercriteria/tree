@@ -8,4 +8,8 @@ in `src/js/`:
 in `src/css/`:
 `stylus -w main.styl`
 
-then copy into your pier
+then copy into your pier:
+
+- `src/js/main.js` and `src/css/main.css` to `pub/src/tree/`
+- `tree/` to `pub/fab/tree/`
+- `stub/` to `pub/`
