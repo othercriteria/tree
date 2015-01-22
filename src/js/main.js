@@ -70,25 +70,11 @@ module.exports = recl({
       url: window.location.pathname
     };
   },
-  checkPath: function(path) {
-    return this.state.cont[path] != null;
-  },
   setPath: function(href, hist) {
     if (hist !== false) {
       history.pushState({}, "", "/gen/main/tree/" + href);
     }
     return TreeActions.setCurr(href);
-  },
-  goTo: function(path) {
-    if (this.checkPath(path)) {
-      return this.setPath(path);
-    } else {
-      return TreeActions.getPath(path, (function(_this) {
-        return function() {
-          return _this.setPath(path);
-        };
-      })(this));
-    }
   },
   checkURL: function() {
     if (this.state.url !== window.location.pathname) {
@@ -106,7 +92,7 @@ module.exports = recl({
           href = href.slice(1);
           e.preventDefault();
           e.stopPropagation();
-          return _this.goTo(href);
+          return _this.setPath(href);
         }
       };
     })(this));
@@ -177,11 +163,13 @@ module.exports = recl({
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee":[function(require,module,exports){
-var TreeActions, TreeStore, div, input, recl, rend, textarea, _ref;
+var ListComponent, TreeActions, TreeStore, div, input, recl, rend, textarea, _ref;
 
 TreeStore = require('../stores/TreeStore.coffee');
 
 TreeActions = require('../actions/TreeActions.coffee');
+
+ListComponent = require('./ListComponent.coffee');
 
 recl = React.createClass;
 
@@ -190,26 +178,37 @@ rend = React.renderComponent;
 _ref = [React.DOM.div, React.DOM.input, React.DOM.textarea], div = _ref[0], input = _ref[1], textarea = _ref[2];
 
 module.exports = recl({
-  availableComponents: ["page", "list"],
   stateFromStore: function() {
     return {
       body: TreeStore.getBody(),
       load: TreeStore.getLoad(),
+      curr: TreeStore.getCurr(),
       cont: TreeStore.getCont()
     };
   },
   componentDidMount: function() {
+    this.getPath(this.state.curr.slice(1));
     return TreeStore.addChangeListener(this._onChangeStore);
   },
-  componentDidUpdate: function() {},
+  componentDidUpdate: function(_props, _state) {
+    if (_state.curr !== this.state.curr) {
+      return setTimeout(((function(_this) {
+        return function() {
+          return _this.getPath(_state.curr.slice(1));
+        };
+      })(this)), 0);
+    }
+  },
   getInitialState: function() {
     return this.stateFromStore();
   },
   _onChangeStore: function() {
     return this.setState(this.stateFromStore());
   },
-  checkPath: function(path) {
-    return this.state.cont[path] != null;
+  getPath: function(path) {
+    if (this.state.cont[path] == null) {
+      return TreeActions.getPath(path);
+    }
   },
   render: function() {
     var body, k, parts;
@@ -224,6 +223,51 @@ module.exports = recl({
       id: 'body'
     }, body));
     return div({}, parts);
+  }
+});
+
+
+
+},{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee","./ListComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee":[function(require,module,exports){
+var TreeActions, TreeStore, div, input, recl, rend, textarea, _ref;
+
+TreeStore = require('../stores/TreeStore.coffee');
+
+TreeActions = require('../actions/TreeActions.coffee');
+
+recl = React.createClass;
+
+rend = React.renderComponent;
+
+_ref = [React.DOM.div, React.DOM.input, React.DOM.textarea], div = _ref[0], input = _ref[1], textarea = _ref[2];
+
+module.exports = recl({
+  stateFromStore: function() {
+    return {
+      tree: TreeStore.getTree([])
+    };
+  },
+  componentDidMount: function() {
+    return TreeStore.addChangeListener(this._onChangeStore);
+  },
+  getInitialState: function() {
+    return this.stateFromStore();
+  },
+  _onChangeStore: function() {
+    return this.setState(this.stateFromStore());
+  },
+  componentDidMount: function() {
+    var _ref1, _ref2;
+    if (!((_ref1 = this.state.tree.doc) != null ? (_ref2 = _ref1.hoon) != null ? _ref2.library : void 0 : void 0)) {
+      return TreeActions.getPath("doc/hoon/library");
+    }
+  },
+  render: function() {
+    var doc, _ref1, _ref2, _ref3;
+    doc = (_ref1 = (_ref2 = this.state.tree.doc) != null ? (_ref3 = _ref2.hoon) != null ? _ref3.library : void 0 : void 0) != null ? _ref1 : [];
+    return div({}, _.each(_.keys(doc), function(v) {
+      return div({}, v);
+    }));
   }
 });
 
@@ -254,29 +298,22 @@ module.exports = copyProperties(new Dispatcher(), {
 
 
 },{"flux":"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/flux/index.js","react/lib/copyProperties":"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/react/lib/copyProperties.js"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/main.coffee":[function(require,module,exports){
-var AnchorComponent, BodyComponent, TreeActions, TreePersistence, rend;
+var rend;
 
 rend = React.renderComponent;
 
-AnchorComponent = require('./components/AnchorComponent.coffee');
-
-BodyComponent = require('./components/BodyComponent.coffee');
-
-TreeActions = require('./actions/TreeActions.coffee');
-
-TreePersistence = require('./persistence/TreePersistence.coffee');
-
 $(function() {
-  var $body, frag, path, up;
+  var $body, AnchorComponent, BodyComponent, TreeActions, TreePersistence, frag, path, up;
   window.BodyComponent = BodyComponent;
   $body = $('body');
+  AnchorComponent = require('./components/AnchorComponent.coffee');
+  BodyComponent = require('./components/BodyComponent.coffee');
+  TreeActions = require('./actions/TreeActions.coffee');
+  TreePersistence = require('./persistence/TreePersistence.coffee');
   path = window.location.pathname.split("/").slice(4);
   frag = path.join("/");
   path.pop();
-  up = path.join("/");
-  TreeActions.setCurr(frag);
-  TreeActions.loadPath(frag, $('#cont-raw').text(), window.tree.kids);
-  TreeActions.getPath(up);
+  up = path.join("/").slice(0, -1);
   rend(AnchorComponent({}, ""), $('#nav')[0]);
   return rend(BodyComponent({}, ""), $('#cont')[0]);
 });

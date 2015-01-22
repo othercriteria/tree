@@ -16,17 +16,9 @@ module.exports = recl
     cont:TreeStore.getCont()
     url:window.location.pathname
 
-  checkPath: (path) -> @state.cont[path]?
-
   setPath: (href,hist) ->
     if hist isnt false then history.pushState {}, "", "/gen/main/tree/"+href
     TreeActions.setCurr href
-
-  goTo: (path) ->
-    if @checkPath path
-      @setPath path
-    else
-      TreeActions.getPath path, => @setPath path
 
   checkURL: ->
     if @state.url isnt window.location.pathname
@@ -43,7 +35,7 @@ module.exports = recl
         href = href.slice(1)
         e.preventDefault()
         e.stopPropagation()
-        @goTo href
+        @setPath href
 
   componentWillUnmount: -> $('body').off 'click', 'a'
 
