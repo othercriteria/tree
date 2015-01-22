@@ -6,6 +6,7 @@ TreeActions       = require './actions/TreeActions.coffee'
 TreePersistence   = require './persistence/TreePersistence.coffee'
 
 $ ->
+  window.BodyComponent = BodyComponent
   $body = $('body')
 
   path = window.location.pathname.split("/").slice(4)

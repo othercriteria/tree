@@ -177,40 +177,44 @@ module.exports = recl({
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee":[function(require,module,exports){
-var TreeStore, div, input, recl, textarea, _ref;
+var TreeActions, TreeStore, div, input, recl, rend, textarea, _ref;
 
 TreeStore = require('../stores/TreeStore.coffee');
 
+TreeActions = require('../actions/TreeActions.coffee');
+
 recl = React.createClass;
+
+rend = React.renderComponent;
 
 _ref = [React.DOM.div, React.DOM.input, React.DOM.textarea], div = _ref[0], input = _ref[1], textarea = _ref[2];
 
 module.exports = recl({
+  availableComponents: ["page", "list"],
   stateFromStore: function() {
     return {
       body: TreeStore.getBody(),
-      load: TreeStore.getLoad()
+      load: TreeStore.getLoad(),
+      cont: TreeStore.getCont()
     };
   },
   componentDidMount: function() {
-    TreeStore.addChangeListener(this._onChangeStore);
-    return this.setBody();
+    return TreeStore.addChangeListener(this._onChangeStore);
   },
-  componentDidUpdate: function() {
-    return this.setBody();
-  },
+  componentDidUpdate: function() {},
   getInitialState: function() {
     return this.stateFromStore();
   },
   _onChangeStore: function() {
     return this.setState(this.stateFromStore());
   },
-  setBody: function() {
-    return $("#body").html(this.state.body);
+  checkPath: function(path) {
+    return this.state.cont[path] != null;
   },
   render: function() {
-    var k, parts;
+    var body, k, parts;
     parts = [];
+    body = eval(JSXTransformer.transform("<div>" + this.state.body + "</div>").code);
     k = this.state.load ? "load" : "";
     parts.push(div({
       id: "load",
@@ -218,14 +222,14 @@ module.exports = recl({
     }, "LOADING"));
     parts.push(div({
       id: 'body'
-    }, ""));
+    }, body));
     return div({}, parts);
   }
 });
 
 
 
-},{"../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/dispatcher/Dispatcher.coffee":[function(require,module,exports){
+},{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/dispatcher/Dispatcher.coffee":[function(require,module,exports){
 var Dispatcher, copyProperties;
 
 Dispatcher = require('flux').Dispatcher;
@@ -264,6 +268,7 @@ TreePersistence = require('./persistence/TreePersistence.coffee');
 
 $(function() {
   var $body, frag, path, up;
+  window.BodyComponent = BodyComponent;
   $body = $('body');
   path = window.location.pathname.split("/").slice(4);
   frag = path.join("/");
