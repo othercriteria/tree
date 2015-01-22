@@ -2,8 +2,6 @@ EventEmitter = require('events').EventEmitter
 
 MessageDispatcher = require '../dispatcher/Dispatcher.coffee'
 
-ListComponent     = require '../components/ListComponent.coffee'
-
 _tree = {}
 _cont = {}
 _load = false
@@ -44,7 +42,7 @@ TreeStore = _.extend EventEmitter.prototype, {
   getLoad: -> _load
 
   loadPath: (path,body,kids,crum) ->
-    _cont[path] = eval JSXTransformer.transform("<div>"+body+"</div>").code
+    _cont[path] = body
 
     _obj = {}
     @pathToObj path,_obj,kids

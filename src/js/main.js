@@ -186,11 +186,13 @@ module.exports = recl({
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee":[function(require,module,exports){
-var TreeActions, TreeStore, div, input, recl, textarea, _ref;
+var ListComponent, TreeActions, TreeStore, div, input, recl, textarea, _ref;
 
 TreeStore = require('../stores/TreeStore.coffee');
 
 TreeActions = require('../actions/TreeActions.coffee');
+
+ListComponent = require('../components/ListComponent.coffee');
 
 recl = React.createClass;
 
@@ -229,8 +231,9 @@ module.exports = recl({
     }
   },
   render: function() {
-    var k, parts;
+    var body, k, parts;
     parts = [];
+    body = eval(JSXTransformer.transform("<div>" + this.state.body + "</div>").code);
     k = this.state.load ? "load" : "";
     parts.push(div({
       id: "load",
@@ -240,15 +243,15 @@ module.exports = recl({
     parts.push(div({
       id: 'body',
       key: "body" + this.state.curr
-    }, this.state.body));
+    }, body));
     return div({}, parts);
   }
 });
 
 
 
-},{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee":[function(require,module,exports){
-var TreeActions, TreeStore, div, input, recl, rend, textarea, _ref;
+},{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../components/ListComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee":[function(require,module,exports){
+var TreeActions, TreeStore, div, input, recl, textarea, _ref;
 
 TreeStore = require('../stores/TreeStore.coffee');
 
@@ -256,14 +259,35 @@ TreeActions = require('../actions/TreeActions.coffee');
 
 recl = React.createClass;
 
-rend = React.renderComponent;
-
 _ref = [React.DOM.div, React.DOM.input, React.DOM.textarea], div = _ref[0], input = _ref[1], textarea = _ref[2];
 
 module.exports = recl({
-  componentDidMount: function() {},
+  stateFromStore: function() {
+    return {
+      tree: TreeStore.getTree([])
+    };
+  },
+  componentDidMount: function() {
+    return TreeStore.addChangeListener(this._onChangeStore);
+  },
+  getInitialState: function() {
+    return this.stateFromStore();
+  },
+  _onChangeStore: function() {
+    return this.setState(this.stateFromStore());
+  },
+  componentDidMount: function() {
+    var _ref1, _ref2;
+    if (!((_ref1 = this.state.tree.doc) != null ? (_ref2 = _ref1.hoon) != null ? _ref2.library : void 0 : void 0)) {
+      return TreeActions.getPath("doc/hoon/library");
+    }
+  },
   render: function() {
-    return div({}, "library!");
+    var doc, _ref1, _ref2, _ref3;
+    doc = (_ref1 = (_ref2 = this.state.tree.doc) != null ? (_ref3 = _ref2.hoon) != null ? _ref3.library : void 0 : void 0) != null ? _ref1 : [];
+    return div({}, _.each(_.keys(doc), function(v) {
+      return div({}, v);
+    }));
   }
 });
 
@@ -657,13 +681,11 @@ module.exports = {
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee":[function(require,module,exports){
-var EventEmitter, ListComponent, MessageDispatcher, TreeStore, _cont, _curr, _load, _tree;
+var EventEmitter, MessageDispatcher, TreeStore, _cont, _curr, _load, _tree;
 
 EventEmitter = require('events').EventEmitter;
 
 MessageDispatcher = require('../dispatcher/Dispatcher.coffee');
-
-ListComponent = require('../components/ListComponent.coffee');
 
 _tree = {};
 
@@ -727,7 +749,7 @@ TreeStore = _.extend(EventEmitter.prototype, {
   },
   loadPath: function(path, body, kids, crum) {
     var _obj;
-    _cont[path] = eval(JSXTransformer.transform("<div>" + body + "</div>").code);
+    _cont[path] = body;
     _obj = {};
     this.pathToObj(path, _obj, kids);
     return _.merge(_tree, _obj);
@@ -827,7 +849,7 @@ module.exports = TreeStore;
 
 
 
-},{"../components/ListComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee","../dispatcher/Dispatcher.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/dispatcher/Dispatcher.coffee","events":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/events/events.js"}],"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/events/events.js":[function(require,module,exports){
+},{"../dispatcher/Dispatcher.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/dispatcher/Dispatcher.coffee","events":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/events/events.js"}],"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/events/events.js":[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
