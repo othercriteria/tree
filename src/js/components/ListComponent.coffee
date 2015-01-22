@@ -6,20 +6,21 @@ rend = React.renderComponent
 [div,input,textarea] = [React.DOM.div,React.DOM.input,React.DOM.textarea]
 
 module.exports = recl
-  stateFromStore: -> 
-    tree:TreeStore.getTree([])
+  # stateFromStore: -> 
+  #   tree:TreeStore.getTree([])
 
-  componentDidMount: -> 
-    TreeStore.addChangeListener @_onChangeStore
+  # componentDidMount: -> 
+  #   TreeStore.addChangeListener @_onChangeStore
 
-  getInitialState: -> @stateFromStore()
+  # getInitialState: -> @stateFromStore()
 
-  _onChangeStore: ->  @setState @stateFromStore()
+  # _onChangeStore: ->  @setState @stateFromStore()
 
   componentDidMount: ->
-    if not @state.tree.doc?.hoon?.library
-      TreeActions.getPath "doc/hoon/library"
+    # if not @state.tree.doc?.hoon?.library
+    #   TreeActions.getPath "doc/hoon/library"
 
   render: ->
-    doc = @state.tree.doc?.hoon?.library ? []
-    (div {}, _.each _.keys(doc), (v) -> (div {}, v))
+    # doc = @state.tree.doc?.hoon?.library ? []
+    # (div {}, _.each _.keys(doc), (v) -> (div {}, v))
+    (div {}, "library!")

@@ -1,10 +1,7 @@
 TreeStore = require '../stores/TreeStore.coffee'
 TreeActions = require '../actions/TreeActions.coffee'
 
-ListComponent     = require './ListComponent.coffee'
-
 recl = React.createClass
-rend = React.renderComponent
 [div,input,textarea] = [React.DOM.div,React.DOM.input,React.DOM.textarea]
 
 module.exports = recl
@@ -15,7 +12,6 @@ module.exports = recl
     cont:TreeStore.getCont()
   
   componentDidMount: -> 
-    @getPath @state.curr.slice(1)
     TreeStore.addChangeListener @_onChangeStore
 
   componentDidUpdate: (_props,_state) -> 
@@ -32,10 +28,8 @@ module.exports = recl
   render: ->
     parts = []
 
-    body = eval JSXTransformer.transform("<div>"+@state.body+"</div>").code
-
     k = if @state.load then "load" else ""
-    parts.push (div {id:"load",className:k}, "LOADING")
-    parts.push (div {id:'body'},body)
+    parts.push (div {id:"load",key:"loading",className:k}, "LOADING")
+    parts.push (div {id:'body',key:"body"+@state.curr},@state.body)
 
     (div {}, parts)

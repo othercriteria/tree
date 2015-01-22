@@ -70,11 +70,25 @@ module.exports = recl({
       url: window.location.pathname
     };
   },
+  checkPath: function(path) {
+    return this.state.cont[path] != null;
+  },
   setPath: function(href, hist) {
     if (hist !== false) {
       history.pushState({}, "", "/gen/main/tree/" + href);
     }
     return TreeActions.setCurr(href);
+  },
+  goTo: function(path) {
+    if (this.checkPath(path)) {
+      return this.setPath(path);
+    } else {
+      return TreeActions.getPath(path, (function(_this) {
+        return function() {
+          return _this.setPath(path);
+        };
+      })(this));
+    }
   },
   checkURL: function() {
     if (this.state.url !== window.location.pathname) {
@@ -92,7 +106,7 @@ module.exports = recl({
           href = href.slice(1);
           e.preventDefault();
           e.stopPropagation();
-          return _this.setPath(href);
+          return _this.goTo(href);
         }
       };
     })(this));
@@ -112,18 +126,21 @@ module.exports = recl({
     if (this.state.pare) {
       _parts = [];
       _parts.push(a({
+        key: "arow-up",
         href: this.state.pare,
         className: "arow-up"
       }, ""));
       if (this.state.prev || this.state.next) {
         if (this.state.prev) {
           _parts.push(a({
+            key: "arow-prev",
             href: this.state.prev,
             className: "arow-prev"
           }, ""));
         }
         if (this.state.next) {
           _parts.push(a({
+            key: "arow-next",
             href: this.state.next,
             className: "arow-next"
           }, ""));
@@ -136,12 +153,16 @@ module.exports = recl({
     if (this.state.crum) {
       crums = _.map(this.state.crum, function(i) {
         return [
-          div({}, "/"), a({
+          div({
+            key: i.name + "-sl"
+          }, "/"), a({
+            key: i.name + "-a",
             href: i.path
           }, i.name)
         ];
       });
       parts.push(div({
+        key: "bred",
         id: "bred"
       }, crums));
     }
@@ -149,10 +170,12 @@ module.exports = recl({
       curr = this.state.curr;
       kids = _.map(this.state.kids, function(i) {
         return a({
+          key: i + "-a",
           href: curr + "/" + i
         }, i);
       });
       parts.push(div({
+        key: "kids",
         id: "kids"
       }, kids));
     }
@@ -163,17 +186,13 @@ module.exports = recl({
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee":[function(require,module,exports){
-var ListComponent, TreeActions, TreeStore, div, input, recl, rend, textarea, _ref;
+var TreeActions, TreeStore, div, input, recl, textarea, _ref;
 
 TreeStore = require('../stores/TreeStore.coffee');
 
 TreeActions = require('../actions/TreeActions.coffee');
 
-ListComponent = require('./ListComponent.coffee');
-
 recl = React.createClass;
-
-rend = React.renderComponent;
 
 _ref = [React.DOM.div, React.DOM.input, React.DOM.textarea], div = _ref[0], input = _ref[1], textarea = _ref[2];
 
@@ -187,7 +206,6 @@ module.exports = recl({
     };
   },
   componentDidMount: function() {
-    this.getPath(this.state.curr.slice(1));
     return TreeStore.addChangeListener(this._onChangeStore);
   },
   componentDidUpdate: function(_props, _state) {
@@ -211,24 +229,25 @@ module.exports = recl({
     }
   },
   render: function() {
-    var body, k, parts;
+    var k, parts;
     parts = [];
-    body = eval(JSXTransformer.transform("<div>" + this.state.body + "</div>").code);
     k = this.state.load ? "load" : "";
     parts.push(div({
       id: "load",
+      key: "loading",
       className: k
     }, "LOADING"));
     parts.push(div({
-      id: 'body'
-    }, body));
+      id: 'body',
+      key: "body" + this.state.curr
+    }, this.state.body));
     return div({}, parts);
   }
 });
 
 
 
-},{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee","./ListComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee":[function(require,module,exports){
+},{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee":[function(require,module,exports){
 var TreeActions, TreeStore, div, input, recl, rend, textarea, _ref;
 
 TreeStore = require('../stores/TreeStore.coffee');
@@ -242,45 +261,20 @@ rend = React.renderComponent;
 _ref = [React.DOM.div, React.DOM.input, React.DOM.textarea], div = _ref[0], input = _ref[1], textarea = _ref[2];
 
 module.exports = recl({
-  stateFromStore: function() {
-    return {
-      tree: TreeStore.getTree([])
-    };
-  },
-  componentDidMount: function() {
-    return TreeStore.addChangeListener(this._onChangeStore);
-  },
-  getInitialState: function() {
-    return this.stateFromStore();
-  },
-  _onChangeStore: function() {
-    return this.setState(this.stateFromStore());
-  },
-  componentDidMount: function() {
-    var _ref1, _ref2;
-    if (!((_ref1 = this.state.tree.doc) != null ? (_ref2 = _ref1.hoon) != null ? _ref2.library : void 0 : void 0)) {
-      return TreeActions.getPath("doc/hoon/library");
-    }
-  },
+  componentDidMount: function() {},
   render: function() {
-    var doc, _ref1, _ref2, _ref3;
-    doc = (_ref1 = (_ref2 = this.state.tree.doc) != null ? (_ref3 = _ref2.hoon) != null ? _ref3.library : void 0 : void 0) != null ? _ref1 : [];
-    return div({}, _.each(_.keys(doc), function(v) {
-      return div({}, v);
-    }));
+    return div({}, "library!");
   }
 });
 
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/dispatcher/Dispatcher.coffee":[function(require,module,exports){
-var Dispatcher, copyProperties;
+var Dispatcher;
 
 Dispatcher = require('flux').Dispatcher;
 
-copyProperties = require('react/lib/copyProperties');
-
-module.exports = copyProperties(new Dispatcher(), {
+module.exports = _.extend(new Dispatcher(), {
   handleServerAction: function(action) {
     return this.dispatch({
       source: 'server',
@@ -297,23 +291,29 @@ module.exports = copyProperties(new Dispatcher(), {
 
 
 
-},{"flux":"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/flux/index.js","react/lib/copyProperties":"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/react/lib/copyProperties.js"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/main.coffee":[function(require,module,exports){
+},{"flux":"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/flux/index.js"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/main.coffee":[function(require,module,exports){
 var rend;
 
-rend = React.renderComponent;
+rend = React.render;
 
 $(function() {
   var $body, AnchorComponent, BodyComponent, TreeActions, TreePersistence, frag, path, up;
   window.BodyComponent = BodyComponent;
   $body = $('body');
-  AnchorComponent = require('./components/AnchorComponent.coffee');
-  BodyComponent = require('./components/BodyComponent.coffee');
+  AnchorComponent = React.createFactory(require('./components/AnchorComponent.coffee'));
+  BodyComponent = React.createFactory(require('./components/BodyComponent.coffee'));
   TreeActions = require('./actions/TreeActions.coffee');
   TreePersistence = require('./persistence/TreePersistence.coffee');
   path = window.location.pathname.split("/").slice(4);
   frag = path.join("/");
   path.pop();
   up = path.join("/").slice(0, -1);
+  console.log(up);
+  TreeActions.setCurr(frag);
+  TreeActions.loadPath(frag, $('#cont-raw').text(), window.tree.kids);
+  if (up !== "") {
+    TreeActions.getPath(up);
+  }
   rend(AnchorComponent({}, ""), $('#nav')[0]);
   return rend(BodyComponent({}, ""), $('#cont')[0]);
 });
@@ -639,65 +639,7 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
 
 module.exports = invariant;
 
-},{}],"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/react/lib/copyProperties.js":[function(require,module,exports){
-(function (process){
-/**
- * Copyright 2013-2014, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule copyProperties
- */
-
-/**
- * Copy properties from one or more objects (up to 5) into the first object.
- * This is a shallow copy. It mutates the first object and also returns it.
- *
- * NOTE: `arguments` has a very significant performance penalty, which is why
- * we don't support unlimited arguments.
- */
-function copyProperties(obj, a, b, c, d, e, f) {
-  obj = obj || {};
-
-  if ("production" !== process.env.NODE_ENV) {
-    if (f) {
-      throw new Error('Too many arguments passed to copyProperties');
-    }
-  }
-
-  var args = [a, b, c, d, e];
-  var ii = 0, v;
-  while (args[ii]) {
-    v = args[ii++];
-    for (var k in v) {
-      obj[k] = v[k];
-    }
-
-    // IE ignores toString in object iteration.. See:
-    // webreflection.blogspot.com/2007/07/quick-fix-internet-explorer-and.html
-    if (v.hasOwnProperty && v.hasOwnProperty('toString') &&
-        (typeof v.toString != 'undefined') && (obj.toString !== v.toString)) {
-      obj.toString = v.toString;
-    }
-  }
-
-  return obj;
-}
-
-module.exports = copyProperties;
-
-// deprecation notice
-console.warn(
-  'react/lib/copyProperties has been deprecated and will be removed in the ' +
-  'next version of React. All uses can be replaced with ' +
-  'Object.assign(obj, a, b, ...) or _.extend(obj, a, b, ...).'
-);
-
-}).call(this,require('_process'))
-},{"_process":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/persistence/TreePersistence.coffee":[function(require,module,exports){
+},{}],"/Users/galen/Documents/Projects/urbit.tree/src/js/persistence/TreePersistence.coffee":[function(require,module,exports){
 var TreeActions;
 
 TreeActions = require('../actions/TreeActions.coffee');
@@ -715,11 +657,13 @@ module.exports = {
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee":[function(require,module,exports){
-var EventEmitter, MessageDispatcher, TreeStore, _cont, _curr, _load, _tree;
+var EventEmitter, ListComponent, MessageDispatcher, TreeStore, _cont, _curr, _load, _tree;
 
 EventEmitter = require('events').EventEmitter;
 
 MessageDispatcher = require('../dispatcher/Dispatcher.coffee');
+
+ListComponent = require('../components/ListComponent.coffee');
 
 _tree = {};
 
@@ -783,7 +727,7 @@ TreeStore = _.extend(EventEmitter.prototype, {
   },
   loadPath: function(path, body, kids, crum) {
     var _obj;
-    _cont[path] = body;
+    _cont[path] = eval(JSXTransformer.transform("<div>" + body + "</div>").code);
     _obj = {};
     this.pathToObj(path, _obj, kids);
     return _.merge(_tree, _obj);
@@ -883,7 +827,7 @@ module.exports = TreeStore;
 
 
 
-},{"../dispatcher/Dispatcher.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/dispatcher/Dispatcher.coffee","events":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/events/events.js"}],"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/events/events.js":[function(require,module,exports){
+},{"../components/ListComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee","../dispatcher/Dispatcher.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/dispatcher/Dispatcher.coffee","events":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/events/events.js"}],"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/events/events.js":[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1187,70 +1131,5 @@ function isObject(arg) {
 function isUndefined(arg) {
   return arg === void 0;
 }
-
-},{}],"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-}
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
 
 },{}]},{},["/Users/galen/Documents/Projects/urbit.tree/src/js/main.coffee"]);
