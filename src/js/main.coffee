@@ -1,22 +1,24 @@
-rend = React.renderComponent
-
-AnchorComponent   = require './components/AnchorComponent.coffee'
-BodyComponent     = require './components/BodyComponent.coffee'
-TreeActions       = require './actions/TreeActions.coffee'
-TreePersistence   = require './persistence/TreePersistence.coffee'
+rend = React.render
 
 $ ->
   window.BodyComponent = BodyComponent
   $body = $('body')
 
+  AnchorComponent   = React.createFactory require './components/AnchorComponent.coffee'
+  BodyComponent     = React.createFactory require './components/BodyComponent.coffee'
+  TreeActions       = require './actions/TreeActions.coffee'
+  TreePersistence   = require './persistence/TreePersistence.coffee'
+
   path = window.location.pathname.split("/").slice(4)
   frag = path.join("/")
   path.pop()
-  up = path.join("/")
+  up = path.join("/").slice(0,-1)
+
+  console.log up
 
   TreeActions.setCurr frag
   TreeActions.loadPath frag,$('#cont-raw').text(),window.tree.kids
-  TreeActions.getPath up
+  if up isnt "" then TreeActions.getPath up
 
   rend (AnchorComponent {}, ""),$('#nav')[0]
   rend (BodyComponent {}, ""),$('#cont')[0]

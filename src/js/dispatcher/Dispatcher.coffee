@@ -1,7 +1,6 @@
 Dispatcher = require('flux').Dispatcher
-copyProperties = require 'react/lib/copyProperties'
 
-module.exports = copyProperties new Dispatcher(), {
+module.exports = _.extend new Dispatcher(), {
   handleServerAction: (action) ->
     @dispatch
       source: 'server'
