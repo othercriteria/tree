@@ -267,7 +267,7 @@ TreeActions = require('./actions/TreeActions.coffee');
 TreePersistence = require('./persistence/TreePersistence.coffee');
 
 $(function() {
-  var $body, frag, path, up;
+  var $body, checkScroll, frag, path, up;
   window.BodyComponent = BodyComponent;
   $body = $('body');
   path = window.location.pathname.split("/").slice(4);
@@ -278,7 +278,15 @@ $(function() {
   TreeActions.loadPath(frag, $('#cont-raw').text(), window.tree.kids);
   TreeActions.getPath(up);
   rend(AnchorComponent({}, ""), $('#nav')[0]);
-  return rend(BodyComponent({}, ""), $('#cont')[0]);
+  rend(BodyComponent({}, ""), $('#cont')[0]);
+  checkScroll = function() {
+    if ($(window).scrollTop() > 20) {
+      return $('#nav').addClass('scrolling');
+    } else {
+      return $('#nav').removeClass('scrolling');
+    }
+  };
+  return setInterval(checkScroll, 500);
 });
 
 

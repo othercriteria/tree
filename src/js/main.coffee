@@ -21,6 +21,13 @@ $ ->
   rend (AnchorComponent {}, ""),$('#nav')[0]
   rend (BodyComponent {}, ""),$('#cont')[0]
 
+  checkScroll = ->
+    if $(window).scrollTop() > 20
+      $('#nav').addClass 'scrolling'
+    else
+      $('#nav').removeClass 'scrolling'
+  setInterval checkScroll, 500
+
   # route = ->
   #     _route = window.location.hash.substr(1)
   #     _route = "" if not _route

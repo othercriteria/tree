@@ -32,12 +32,6 @@
                                     window.tree.up = {(pojo (parent-json get-parent))}
                                     window.tree.kids = {(pojo (kids-json get-kids))}
                                     window.tree.bred = {(pojo (bread-json get-bread))}
-                                    TestComponent = React.createClass(\{
-                                      render: function() \{
-                                        console.log('hi')
-                                        return (React.DOM.div(\{}, 'test component!'))
-                                      }
-                                    })
                                     """
     ;textarea#cont-raw(style "display:none"): *{+.pal}
     ;div#nav;

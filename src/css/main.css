@@ -48,9 +48,6 @@ a {
   display: inline-block;
   line-height: 0.8rem;
 }
-#nav a {
-  border-bottom: 2px solid #000;
-}
 body {
   font-size: 0.9rem;
 }
@@ -108,15 +105,29 @@ li:before {
 }
 #nav,
 #cont {
-  position: absolute;
   width: 42rem;
   left: 50%;
   margin-left: -21rem;
 }
 #nav {
-  height: 4rem;
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+  background-color: #fff;
+  max-height: 4rem;
+}
+#nav.scrolling {
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+#nav,
+#nav:hover,
+#nav.scrolling:hover {
+  opacity: 1;
+  transition: opacity 1s ease-in-out;
 }
 #cont {
+  position: absolute;
   top: 3rem;
 }
 #load {
@@ -142,9 +153,14 @@ li:before {
 }
 #nav a {
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 500;
   line-height: 0.8rem;
+  border-bottom: 1px solid #000;
+}
+#bred a {
+  font-family: "source-code-pro";
+  text-transform: lowercase;
 }
 #sibs {
   width: 100%;
