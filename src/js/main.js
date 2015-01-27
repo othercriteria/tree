@@ -231,9 +231,8 @@ module.exports = recl({
     }
   },
   render: function() {
-    var body, k, parts;
+    var k, parts;
     parts = [];
-    body = eval(JSXTransformer.transform("<div>" + this.state.body + "</div>").code);
     k = this.state.load ? "load" : "";
     parts.push(div({
       id: "load",
@@ -242,8 +241,11 @@ module.exports = recl({
     }, "LOADING"));
     parts.push(div({
       id: 'body',
-      key: "body" + this.state.curr
-    }, body));
+      key: "body" + this.state.curr,
+      dangerouslySetInnerHTML: {
+        __html: this.state.body
+      }
+    }, null));
     return div({}, parts);
   }
 });

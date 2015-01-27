@@ -30,10 +30,10 @@ module.exports = recl
   render: ->
     parts = []
 
-    body = eval JSXTransformer.transform("<div>"+@state.body+"</div>").code
+    # body = eval JSXTransformer.transform("<div>"+@state.body+"</div>").code
 
     k = if @state.load then "load" else ""
     parts.push (div {id:"load",key:"loading",className:k}, "LOADING")
-    parts.push (div {id:'body',key:"body"+@state.curr},body)
+    parts.push (div {id:'body',key:"body"+@state.curr,dangerouslySetInnerHTML:{__html:@state.body}},null)
 
     (div {}, parts)
