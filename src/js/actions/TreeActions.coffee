@@ -19,6 +19,7 @@ module.exports =
     loadPath = @loadPath
     if path.slice(-1) is "/" then path = path.slice(0,-1)
     TreePersistence.get path,(err,res) ->
+      res.body = eval res.body
       loadPath path,res.body,res.kids
       if cb then cb err,res
 

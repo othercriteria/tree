@@ -1,7 +1,7 @@
 ::
 /?    314
 /=    gas    /$    fuel
-/=    pal    /:    /===/pub    /%  /psal/
+/=    ral    /:    /===/pub    /%  /react-js/
 ::
 ::::
   ::
@@ -16,5 +16,5 @@
 =+  ~(. util gas)
 %-  jobe  :~
   kids/[%a (turn get-kids |=(a=span s/a))]
-  body/(jape (many:poxo +.pal ~))
+  body/[%s ral]
 ==

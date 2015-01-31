@@ -29,6 +29,7 @@ module.exports = {
       path = path.slice(0, -1);
     }
     return TreePersistence.get(path, function(err, res) {
+      res.body = eval(res.body);
       loadPath(path, res.body, res.kids);
       if (cb) {
         return cb(err, res);
@@ -62,6 +63,7 @@ module.exports = recl({
       crum: TreeStore.getCrumbs(),
       curr: TreeStore.getCurr(),
       pare: TreeStore.getPare(),
+      sibs: TreeStore.getSiblings(),
       next: TreeStore.getNext(),
       prev: TreeStore.getPrev(),
       kids: TreeStore.getKids(),
@@ -121,7 +123,7 @@ module.exports = recl({
     return this.setState(this.stateFromStore());
   },
   render: function() {
-    var crums, curr, kids, parts, _parts;
+    var crums, curr, kids, parts, sibs, _parts;
     parts = [];
     if (this.state.pare) {
       _parts = [];
@@ -166,13 +168,31 @@ module.exports = recl({
         id: "bred"
       }, crums));
     }
+    curr = this.state.curr;
+    if (_.keys(this.state.sibs).length > 0) {
+      console.log('sibs');
+      console.log(this.state.sibs);
+      sibs = _.map(_.keys(this.state.sibs), function(i) {
+        var p, up;
+        p = curr.split("/");
+        p.pop();
+        up = p.join("/");
+        return div({}, a({
+          key: i + "-a",
+          href: p + "/" + i
+        }, i));
+      });
+      parts.push(div({
+        key: "sibs",
+        id: "sibs"
+      }, sibs));
+    }
     if (this.state.kids) {
-      curr = this.state.curr;
       kids = _.map(this.state.kids, function(i) {
-        return a({
+        return div({}, a({
           key: i + "-a",
           href: curr + "/" + i
-        }, i);
+        }, i));
       });
       parts.push(div({
         key: "kids",
@@ -241,11 +261,8 @@ module.exports = recl({
     }, "LOADING"));
     parts.push(div({
       id: 'body',
-      key: "body" + this.state.curr,
-      dangerouslySetInnerHTML: {
-        __html: this.state.body
-      }
-    }, null));
+      key: "body" + this.state.curr
+    }, this.state.body));
     return div({}, parts);
   }
 });
@@ -333,10 +350,13 @@ $(function() {
   path = window.location.pathname.split("/").slice(4);
   frag = path.join("/");
   path.pop();
-  up = path.join("/").slice(0, -1);
+  up = path.join("/");
+  if (up.slice(-1) === "/") {
+    up = up.slice(0, -1);
+  }
   console.log(up);
   TreeActions.setCurr(frag);
-  TreeActions.loadPath(frag, $('#cont-raw').text(), window.tree.kids);
+  TreeActions.loadPath(frag, window.tree.body, window.tree.kids);
   if (up !== "") {
     TreeActions.getPath(up);
   }

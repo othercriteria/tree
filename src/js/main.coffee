@@ -12,12 +12,13 @@ $ ->
   path = window.location.pathname.split("/").slice(4)
   frag = path.join("/")
   path.pop()
-  up = path.join("/").slice(0,-1)
+  up = path.join("/")
+  if up.slice(-1) is "/" then up = up.slice(0,-1)
 
   console.log up
 
   TreeActions.setCurr frag
-  TreeActions.loadPath frag,$('#cont-raw').text(),window.tree.kids
+  TreeActions.loadPath frag,window.tree.body,window.tree.kids
   if up isnt "" then TreeActions.getPath up
 
   rend (AnchorComponent {}, ""),$('#nav')[0]

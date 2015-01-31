@@ -9,6 +9,7 @@ module.exports = recl
     crum:TreeStore.getCrumbs()
     curr:TreeStore.getCurr()
     pare:TreeStore.getPare()
+    sibs:TreeStore.getSiblings()
     next:TreeStore.getNext()
     prev:TreeStore.getPrev()
     kids:TreeStore.getKids()
@@ -66,9 +67,20 @@ module.exports = recl
         [(div {key:i.name+"-sl"}, "/"), (a {key:i.name+"-a",href:i.path},i.name)]
       parts.push (div {key:"bred",id:"bred"}, crums)
 
+    curr = @state.curr
+
+    if _.keys(@state.sibs).length > 0
+      console.log 'sibs'
+      console.log @state.sibs
+      sibs = _.map _.keys(@state.sibs), (i) -> 
+        p = curr.split "/"
+        p.pop()
+        up = p.join "/"
+        (div {}, (a {key:i+"-a",href:p+"/"+i}, i))
+      parts.push (div {key:"sibs",id:"sibs"}, sibs)
+
     if @state.kids
-      curr = @state.curr
-      kids = _.map @state.kids, (i) -> (a {key:i+"-a",href:curr+"/"+i},i)
+      kids = _.map @state.kids, (i) -> (div {}, (a {key:i+"-a",href:curr+"/"+i},i))
       parts.push (div {key:"kids",id:"kids"}, kids)
 
     div {}, parts

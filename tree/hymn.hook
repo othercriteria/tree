@@ -1,7 +1,8 @@
 ::
 /?    314
 /=    gas    /$    fuel
-/=    pal    /:    /===/pub    /%  /psal/
+/=    ral    /:    /===/pub    /%  /react-js/
+
 ::
 ::::
   ::
@@ -15,7 +16,7 @@
 =+  ~(. util gas)
 ;html
   ;head
-    ;title: 'tree'
+    ;title: urbit Tree
     ;link(type "text/css", rel "stylesheet", href "/gen/main/pub/src/tree/main.css");
     ;script(type "text/javascript", src "//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js");
     ;script(type "text/javascript", src "//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js");
@@ -32,8 +33,8 @@
                                     window.tree.up = {(pojo (parent-json get-parent))}
                                     window.tree.kids = {(pojo (kids-json get-kids))}
                                     window.tree.bred = {(pojo (bread-json get-bread))}
+                                    window.tree.body = {(trip ral)}
                                     """
-    ;textarea#cont-raw(style "display:none"): *{+.pal}
     ;div#nav;
     ;div#cont;
     ;script(type "text/javascript", src "/gen/main/pub/src/tree/main.js");
