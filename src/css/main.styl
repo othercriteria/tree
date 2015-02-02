@@ -100,30 +100,38 @@ li:before
 
 #nav
 #cont
-  width 42rem
   left 50%
+
+#cont
+  width 42rem
   margin-left -21rem
 
 #nav
   position fixed
-  top 0
+  top 0rem
+  padding-top 1rem
+  padding-right 1rem
+  border-bottom 1rem solid #fff
   z-index 1000
   background-color #fff
-  max-height 4rem
+  max-height 2rem
+  margin-left -30rem
+  overflow hidden
+  transition opacity 1s ease-in-out, max-height .6s ease-in-out, padding-bottom .3s ease-in-out
 
 #nav.scrolling
   opacity 0
   transition opacity 1s ease-in-out
 
-#nav
 #nav:hover
 #nav.scrolling:hover
   opacity 1
-  transition opacity 1s ease-in-out
+  max-height 20rem
+  transition opacity 1s ease-in-out, max-height .3s ease-in-out, padding-bottom .3s ease-in-out
 
 #cont
   position absolute
-  top 3rem
+  top 4rem
 
 #load
   display none
@@ -143,24 +151,44 @@ li:before
   font-size .6rem
   letter-spacing .1rem
 
-#nav > div
-  height 1.2rem
+#nav > div > div
+  display inline-block
+  vertical-align top
+
+#nav #sibs
+  width 9rem 
+  transition margin-top .3s ease-in-out
+
+#nav:hover #sibs
+  margin-top 0 !important
+  transition margin-top .3s ease-in-out
+
+// #kids
+//   height 8rem
+
+// #kids > div
+//   width 6rem
+//   overflow hidden
 
 #nav a
-  text-transform uppercase
+  text-transform lowercase
   font-size .7rem
   font-weight 500
+  font-family "source-code-pro"
+  margin-bottom .3rem
+  letter-spacing 1px
   line-height .8rem
   border-bottom 1px solid #000
 
-#bred a
-  font-family "source-code-pro"
-  text-transform lowercase
+#nav .active a
+  font-weight 600
+
+#nav .active a:after
+  content "-"
 
 #dpad
-  float left
-  margin-left -4rem
-  padding-top .4rem
+  width 3rem
+  padding-top .2rem
 
 #nav .arow-up
 #nav .arow-next
@@ -179,10 +207,24 @@ li:before
   background-image url("http://office-for.com/lib/etc/arow/a-left.png")
 
 #bred
+  width 5rem
+  padding-right 1rem
+  text-align right
   font-size .6rem
+  white-space nowrap
+  overflow hidden
+
+#bred a
+  font-family "source-code-pro"
+  text-transform lowercase
+  vertical-align top
 
 #bred > div
-  display inline
+  float right
+
+#bred > div > div
+  display inline-block
+  margin-top -.2rem
 
 #bred a
 #kids a

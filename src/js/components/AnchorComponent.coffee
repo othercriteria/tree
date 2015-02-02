@@ -63,21 +63,30 @@ module.exports = recl
       parts.push (div {id:"dpad"},_parts)
 
     if @state.crum 
-      crums = _.map @state.crum, (i) -> 
+      crum = _.clone @state.crum
+      crum.pop()
+      crums = _.map crum, (i) -> 
         [(div {key:i.name+"-sl"}, "/"), (a {key:i.name+"-a",href:i.path},i.name)]
-      parts.push (div {key:"bred",id:"bred"}, crums)
+      crums.push (div {key:"last-sl"}, "/")
+      parts.push (div {key:"bred",id:"bred"}, (div {}, crums))
 
     curr = @state.curr
 
     if _.keys(@state.sibs).length > 0
-      console.log 'sibs'
-      console.log @state.sibs
-      sibs = _.map _.keys(@state.sibs), (i) -> 
-        p = curr.split "/"
-        p.pop()
-        up = p.join "/"
-        (div {}, (a {key:i+"-a",href:p+"/"+i}, i))
-      parts.push (div {key:"sibs",id:"sibs"}, sibs)
+      p = curr.split "/"
+      curr = p.pop()
+      up = p.join "/"
+      ci=0
+      k=0
+      sibs = _.map _.keys(@state.sibs).sort(), (i) -> 
+        c = ""
+        if curr is i
+          c = "active"
+          ci = k
+        k++
+        (div {className:c}, (a {key:i+"-a",href:up+"/"+i}, i))
+      s = {"margin-top":(ci*-1.1)+"em"}
+      parts.push (div {key:"sibs",id:"sibs",style:s}, sibs)
 
     if @state.kids
       kids = _.map @state.kids, (i) -> (div {}, (a {key:i+"-a",href:curr+"/"+i},i))

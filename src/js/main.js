@@ -123,7 +123,7 @@ module.exports = recl({
     return this.setState(this.stateFromStore());
   },
   render: function() {
-    var crums, curr, kids, parts, sibs, _parts;
+    var ci, crum, crums, curr, k, kids, p, parts, s, sibs, up, _parts;
     parts = [];
     if (this.state.pare) {
       _parts = [];
@@ -153,7 +153,9 @@ module.exports = recl({
       }, _parts));
     }
     if (this.state.crum) {
-      crums = _.map(this.state.crum, function(i) {
+      crum = _.clone(this.state.crum);
+      crum.pop();
+      crums = _.map(crum, function(i) {
         return [
           div({
             key: i.name + "-sl"
@@ -163,28 +165,43 @@ module.exports = recl({
           }, i.name)
         ];
       });
+      crums.push(div({
+        key: "last-sl"
+      }, "/"));
       parts.push(div({
         key: "bred",
         id: "bred"
-      }, crums));
+      }, div({}, crums)));
     }
     curr = this.state.curr;
     if (_.keys(this.state.sibs).length > 0) {
-      console.log('sibs');
-      console.log(this.state.sibs);
-      sibs = _.map(_.keys(this.state.sibs), function(i) {
-        var p, up;
-        p = curr.split("/");
-        p.pop();
-        up = p.join("/");
-        return div({}, a({
+      p = curr.split("/");
+      curr = p.pop();
+      up = p.join("/");
+      ci = 0;
+      k = 0;
+      sibs = _.map(_.keys(this.state.sibs).sort(), function(i) {
+        var c;
+        c = "";
+        if (curr === i) {
+          c = "active";
+          ci = k;
+        }
+        k++;
+        return div({
+          className: c
+        }, a({
           key: i + "-a",
-          href: p + "/" + i
+          href: up + "/" + i
         }, i));
       });
+      s = {
+        "margin-top": (ci * -1.1) + "em"
+      };
       parts.push(div({
         key: "sibs",
-        id: "sibs"
+        id: "sibs",
+        style: s
       }, sibs));
     }
     if (this.state.kids) {
