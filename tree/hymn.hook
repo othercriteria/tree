@@ -26,17 +26,19 @@
     ;script(type "text/javascript"):'''
                                     try{Typekit.load();}catch(e){}
                                     '''
+    ;script(type "text/javascript", src "/gen/main/pub/src/tree/main.js");
   ==
   ;body
     ;script(type "text/javascript"):"""
                                     window.tree = \{}
-                                    window.tree.up = {(pojo (parent-json get-parent))}
-                                    window.tree.kids = {(pojo (kids-json get-kids))}
-                                    window.tree.bred = {(pojo (bread-json get-bread))}
-                                    window.tree.body = {(trip ral)}
+                                    window.tree.init = function(ListComponent) \{
+                                      window.tree.up = {(pojo (parent-json get-parent))}
+                                      window.tree.kids = {(pojo (kids-json get-kids))}
+                                      window.tree.bred = {(pojo (bread-json get-bread))}
+                                      window.tree.body = {(trip ral)}
+                                    }
                                     """
     ;div#nav;
     ;div#cont;
-    ;script(type "text/javascript", src "/gen/main/pub/src/tree/main.js");
   ==
 ==

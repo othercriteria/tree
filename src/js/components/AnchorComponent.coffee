@@ -85,7 +85,7 @@ module.exports = recl
           ci = k
         k++
         (div {className:c}, (a {key:i+"-a",href:up+"/"+i}, i))
-      s = {"margin-top":(ci*-1.1)+"em"}
+      s = {marginTop:(ci*-1.1)+"em"}
       parts.push (div {key:"sibs",id:"sibs",style:s}, sibs)
 
     if @state.kids

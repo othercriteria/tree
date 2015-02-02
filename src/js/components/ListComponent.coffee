@@ -17,8 +17,8 @@ module.exports = recl
 
   componentDidMount: ->
     if not @state.tree.doc?.hoon?.library
-      TreeActions.getPath "doc/hoon/library"
+      TreeActions.getPath @props.dataPath
 
   render: ->
     doc = @state.tree.doc?.hoon?.library ? []
-    (div {}, _.each _.keys(doc), (v) -> (div {}, v))
+    (div {}, _.each _.keys(doc), (v) -> (div {key:"lib-"+v}, v))

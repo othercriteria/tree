@@ -196,7 +196,7 @@ module.exports = recl({
         }, i));
       });
       s = {
-        "margin-top": (ci * -1.1) + "em"
+        marginTop: (ci * -1.1) + "em"
       };
       parts.push(div({
         key: "sibs",
@@ -315,14 +315,16 @@ module.exports = recl({
   componentDidMount: function() {
     var _ref1, _ref2;
     if (!((_ref1 = this.state.tree.doc) != null ? (_ref2 = _ref1.hoon) != null ? _ref2.library : void 0 : void 0)) {
-      return TreeActions.getPath("doc/hoon/library");
+      return TreeActions.getPath(this.props.dataPath);
     }
   },
   render: function() {
     var doc, _ref1, _ref2, _ref3;
     doc = (_ref1 = (_ref2 = this.state.tree.doc) != null ? (_ref3 = _ref2.hoon) != null ? _ref3.library : void 0 : void 0) != null ? _ref1 : [];
     return div({}, _.each(_.keys(doc), function(v) {
-      return div({}, v);
+      return div({
+        key: "lib-" + v
+      }, v);
     }));
   }
 });
@@ -357,11 +359,15 @@ var rend;
 rend = React.render;
 
 $(function() {
-  var $body, AnchorComponent, BodyComponent, TreeActions, TreePersistence, checkScroll, frag, path, up;
+  var $body, AnchorComponent, BodyComponent, ListComponent, TreeActions, TreePersistence, checkScroll, frag, path, up;
   window.BodyComponent = BodyComponent;
   $body = $('body');
+  console.log('list');
+  console.log(ListComponent);
   AnchorComponent = React.createFactory(require('./components/AnchorComponent.coffee'));
   BodyComponent = React.createFactory(require('./components/BodyComponent.coffee'));
+  ListComponent = React.createFactory(require('./components/ListComponent.coffee'));
+  window.tree.init(ListComponent);
   TreeActions = require('./actions/TreeActions.coffee');
   TreePersistence = require('./persistence/TreePersistence.coffee');
   path = window.location.pathname.split("/").slice(4);
@@ -371,7 +377,6 @@ $(function() {
   if (up.slice(-1) === "/") {
     up = up.slice(0, -1);
   }
-  console.log(up);
   TreeActions.setCurr(frag);
   TreeActions.loadPath(frag, window.tree.body, window.tree.kids);
   if (up !== "") {
@@ -391,7 +396,7 @@ $(function() {
 
 
 
-},{"./actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","./components/AnchorComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/AnchorComponent.coffee","./components/BodyComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee","./persistence/TreePersistence.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/persistence/TreePersistence.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/flux/index.js":[function(require,module,exports){
+},{"./actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","./components/AnchorComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/AnchorComponent.coffee","./components/BodyComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/BodyComponent.coffee","./components/ListComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee","./persistence/TreePersistence.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/persistence/TreePersistence.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/node_modules/flux/index.js":[function(require,module,exports){
 /**
  * Copyright (c) 2014, Facebook, Inc.
  * All rights reserved.

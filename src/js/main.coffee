@@ -4,8 +4,15 @@ $ ->
   window.BodyComponent = BodyComponent
   $body = $('body')
 
+  console.log 'list'
+  console.log ListComponent
+
   AnchorComponent   = React.createFactory require './components/AnchorComponent.coffee'
   BodyComponent     = React.createFactory require './components/BodyComponent.coffee'
+  ListComponent     = React.createFactory require './components/ListComponent.coffee'
+
+  window.tree.init(ListComponent)
+
   TreeActions       = require './actions/TreeActions.coffee'
   TreePersistence   = require './persistence/TreePersistence.coffee'
 
@@ -14,8 +21,6 @@ $ ->
   path.pop()
   up = path.join("/")
   if up.slice(-1) is "/" then up = up.slice(0,-1)
-
-  console.log up
 
   TreeActions.setCurr frag
   TreeActions.loadPath frag,window.tree.body,window.tree.kids
