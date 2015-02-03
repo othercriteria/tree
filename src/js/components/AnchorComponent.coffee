@@ -55,20 +55,21 @@ module.exports = recl
   render: ->
     parts = []
     if @state.pare
-      _parts = []
-      _parts.push (a {key:"arow-up",href:@state.pare,className:"arow-up"},"")
+      parts.push (div {id:"up"},(a {key:"arow-up",href:@state.pare,className:"arow-up"},""))      
       if @state.prev or @state.next
+        _parts = []
         if @state.prev then _parts.push (a {key:"arow-prev",href:@state.prev,className:"arow-prev"},"")
         if @state.next then _parts.push (a {key:"arow-next",href:@state.next,className:"arow-next"},"")
-      parts.push (div {id:"dpad"},_parts)
+        parts.push (div {id:"sides"}, _parts)
+      
 
-    if @state.crum 
-      crum = _.clone @state.crum
-      crum.pop()
-      crums = _.map crum, (i) -> 
-        [(div {key:i.name+"-sl"}, "/"), (a {key:i.name+"-a",href:i.path},i.name)]
-      crums.push (div {key:"last-sl"}, "/")
-      parts.push (div {key:"bred",id:"bred"}, (div {}, crums))
+    # if @state.crum 
+    #   crum = _.clone @state.crum
+    #   crum.pop()
+    #   crums = _.map crum, (i) -> 
+    #     [(div {key:i.name+"-sl"}, "/"), (a {key:i.name+"-a",href:i.path},i.name)]
+    #   crums.push (div {key:"last-sl"}, "/")
+    #   parts.push (div {key:"bred",id:"bred"}, (div {}, crums))
 
     curr = @state.curr
 
@@ -88,8 +89,8 @@ module.exports = recl
       s = {marginTop:(ci*-1.1)+"em"}
       parts.push (div {key:"sibs",id:"sibs",style:s}, sibs)
 
-    if @state.kids
-      kids = _.map @state.kids, (i) -> (div {}, (a {key:i+"-a",href:curr+"/"+i},i))
-      parts.push (div {key:"kids",id:"kids"}, kids)
+    # if @state.kids
+    #   kids = _.map @state.kids, (i) -> (div {}, (a {key:i+"-a",href:curr+"/"+i},i))
+    #   parts.push (div {key:"kids",id:"kids"}, kids)
 
     div {}, parts

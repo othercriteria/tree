@@ -2,6 +2,10 @@
 /?    314
 /=    gas    /$    fuel
 /=    ral    /:    /===/pub    /%  /react-js/
+/=    pal    /:    /===/pub
+             /;    |=  a=(map ,@ta cord)  a
+             /%    2
+             /_    /react-js/
 ::
 ::::
   ::
@@ -14,6 +18,14 @@
   ::
 ^-  json
 =+  ~(. util gas)
+?:  (~(has by qix.gas) %kids)
+  %+  joba  %kids
+  =-  [%a (turn (~(tap by pal)) -)]
+  |=  [a=span b=cord] 
+  %-  jobe  :~
+    name/s/a
+    body/s/b
+  ==
 %-  jobe  :~
   kids/[%a (turn get-kids |=(a=span s/a))]
   body/[%s ral]

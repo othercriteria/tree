@@ -36,6 +36,20 @@ $ ->
       $('#nav').removeClass 'scrolling'
   setInterval checkScroll, 500
 
+  cm = null
+  lm = null
+  $(document).mousemove (e) -> cm = {x:e.pageX, y:e.pageY}
+  checkMove = ->
+    if lm isnt null and cm isnt null
+      dx = Math.abs cm.x-lm.x
+      dy = Math.abs cm.y-lm.y
+      if dx > 5 or dy > 5
+        $('#nav').addClass 'moving'
+      else
+        $('#nav').removeClass 'moving'
+    lm = cm
+  setInterval checkMove,1500
+
   # route = ->
   #     _route = window.location.hash.substr(1)
   #     _route = "" if not _route

@@ -123,16 +123,18 @@ module.exports = recl({
     return this.setState(this.stateFromStore());
   },
   render: function() {
-    var ci, crum, crums, curr, k, kids, p, parts, s, sibs, up, _parts;
+    var ci, curr, k, p, parts, s, sibs, up, _parts;
     parts = [];
     if (this.state.pare) {
-      _parts = [];
-      _parts.push(a({
+      parts.push(div({
+        id: "up"
+      }, a({
         key: "arow-up",
         href: this.state.pare,
         className: "arow-up"
-      }, ""));
+      }, "")));
       if (this.state.prev || this.state.next) {
+        _parts = [];
         if (this.state.prev) {
           _parts.push(a({
             key: "arow-prev",
@@ -147,31 +149,10 @@ module.exports = recl({
             className: "arow-next"
           }, ""));
         }
+        parts.push(div({
+          id: "sides"
+        }, _parts));
       }
-      parts.push(div({
-        id: "dpad"
-      }, _parts));
-    }
-    if (this.state.crum) {
-      crum = _.clone(this.state.crum);
-      crum.pop();
-      crums = _.map(crum, function(i) {
-        return [
-          div({
-            key: i.name + "-sl"
-          }, "/"), a({
-            key: i.name + "-a",
-            href: i.path
-          }, i.name)
-        ];
-      });
-      crums.push(div({
-        key: "last-sl"
-      }, "/"));
-      parts.push(div({
-        key: "bred",
-        id: "bred"
-      }, div({}, crums)));
     }
     curr = this.state.curr;
     if (_.keys(this.state.sibs).length > 0) {
@@ -203,18 +184,6 @@ module.exports = recl({
         id: "sibs",
         style: s
       }, sibs));
-    }
-    if (this.state.kids) {
-      kids = _.map(this.state.kids, function(i) {
-        return div({}, a({
-          key: i + "-a",
-          href: curr + "/" + i
-        }, i));
-      });
-      parts.push(div({
-        key: "kids",
-        id: "kids"
-      }, kids));
     }
     return div({}, parts);
   }
@@ -359,7 +328,7 @@ var rend;
 rend = React.render;
 
 $(function() {
-  var $body, AnchorComponent, BodyComponent, ListComponent, TreeActions, TreePersistence, checkScroll, frag, path, up;
+  var $body, AnchorComponent, BodyComponent, ListComponent, TreeActions, TreePersistence, checkMove, checkScroll, cm, frag, lm, path, up;
   window.BodyComponent = BodyComponent;
   $body = $('body');
   console.log('list');
@@ -391,7 +360,29 @@ $(function() {
       return $('#nav').removeClass('scrolling');
     }
   };
-  return setInterval(checkScroll, 500);
+  setInterval(checkScroll, 500);
+  cm = null;
+  lm = null;
+  $(document).mousemove(function(e) {
+    return cm = {
+      x: e.pageX,
+      y: e.pageY
+    };
+  });
+  checkMove = function() {
+    var dx, dy;
+    if (lm !== null && cm !== null) {
+      dx = Math.abs(cm.x - lm.x);
+      dy = Math.abs(cm.y - lm.y);
+      if (dx > 5 || dy > 5) {
+        $('#nav').addClass('moving');
+      } else {
+        $('#nav').removeClass('moving');
+      }
+    }
+    return lm = cm;
+  };
+  return setInterval(checkMove, 1500);
 });
 
 
