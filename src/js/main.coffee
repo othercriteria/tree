@@ -10,8 +10,13 @@ $ ->
   AnchorComponent   = React.createFactory require './components/AnchorComponent.coffee'
   BodyComponent     = React.createFactory require './components/BodyComponent.coffee'
   ListComponent     = React.createFactory require './components/ListComponent.coffee'
+  lost              = React.createClass
+    render: -> 
+      console.log @props
+      (div {}, "lost")
 
   window.tree.init(ListComponent)
+  window.tree.reactify = (str) -> eval str
 
   TreeActions       = require './actions/TreeActions.coffee'
   TreePersistence   = require './persistence/TreePersistence.coffee'

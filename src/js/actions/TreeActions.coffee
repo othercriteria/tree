@@ -1,4 +1,4 @@
-TreeDispatcher = require '../dispatcher/Dispatcher.coffee'
+TreeDispatcher    = require '../dispatcher/Dispatcher.coffee'
 TreePersistence   = require '../persistence/TreePersistence.coffee'
 
 module.exports =
@@ -12,14 +12,18 @@ module.exports =
       body:body
       kids:kids
 
-  getPath: (path,cb) ->
+  getPath: (path,cb) ->                                          # (path,[kids,]cb)
+    kids = false
+    if typeof(cb) is 'boolean'
+      kids = arguments[1]
+      cb = arguments[2]
     TreeDispatcher.handleViewAction
       type:"set-load"
       load:true
     loadPath = @loadPath
     if path.slice(-1) is "/" then path = path.slice(0,-1)
-    TreePersistence.get path,(err,res) ->
-      res.body = eval res.body
+    if path[0] is "/" then path = path.slice(1)
+    TreePersistence.get path,kids,(err,res) ->
       loadPath path,res.body,res.kids
       if cb then cb err,res
 

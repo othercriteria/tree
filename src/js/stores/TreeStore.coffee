@@ -17,9 +17,9 @@ TreeStore = _.extend EventEmitter.prototype, {
   pathToArr: (_path) -> _path.split "/"
 
   pathToObj:(_path,_obj,kids) ->
-    _path = @pathToArr _path
-    for i in [0.._path.length-1]
-      _obj = _obj[_path[i]] = {}
+    __path = @pathToArr _path
+    for i in [0..__path.length-1]
+      _obj = _obj[__path[i]] = {}
     if kids?.length > 0
       for i in [0..kids.length-1]
         _obj[kids[i]] = {}
@@ -28,12 +28,15 @@ TreeStore = _.extend EventEmitter.prototype, {
     tree = _tree
     if _path.length > 0
       for i in [0.._path.length-1]
-        tree = tree[_path[i]]
+        if tree[_path[i]]
+          tree = tree[_path[i]]
+        else
+          return null
     tree
 
   setCurr: (path) -> _curr = path
 
-  getCurr: -> "/"+_curr
+  getCurr: -> _curr
 
   getCont: -> _cont
 
@@ -42,14 +45,21 @@ TreeStore = _.extend EventEmitter.prototype, {
   getLoad: -> _load
 
   loadPath: (path,body,kids,crum) ->
-    _cont[path] = body
+    if body
+      _cont[path] = window.tree.reactify body
 
+    _kids =  if kids[0].body then _.pluck(kids,"name") else kids
+    
     _obj = {}
-    @pathToObj path,_obj,kids
+    @pathToObj path,_obj,_kids
     _.merge _tree,_obj
 
-  getKids: ->
-    _.keys @getTree _curr.split("/")
+    if kids[0].body
+      for k,v of kids
+        continue if name is "md"
+        _cont[path+"/"+v.name] = window.tree.reactify v.body
+
+  getKids: -> _.keys @getTree _curr.split("/")
 
   getSiblings: ->
     curr = _curr.split("/")

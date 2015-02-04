@@ -167,7 +167,8 @@ li:before {
   margin-top: 0 !important;
   transition: margin-top 0.3s ease-in-out;
 }
-#nav a {
+#nav a,
+.list > li > a {
   text-transform: uppercase;
   font-size: 0.7rem;
   font-weight: 200;

@@ -19,7 +19,12 @@ module.exports = {
     });
   },
   getPath: function(path, cb) {
-    var loadPath;
+    var kids, loadPath;
+    kids = false;
+    if (typeof cb === 'boolean') {
+      kids = arguments[1];
+      cb = arguments[2];
+    }
     TreeDispatcher.handleViewAction({
       type: "set-load",
       load: true
@@ -28,8 +33,10 @@ module.exports = {
     if (path.slice(-1) === "/") {
       path = path.slice(0, -1);
     }
-    return TreePersistence.get(path, function(err, res) {
-      res.body = eval(res.body);
+    if (path[0] === "/") {
+      path = path.slice(1);
+    }
+    return TreePersistence.get(path, kids, function(err, res) {
       loadPath(path, res.body, res.kids);
       if (cb) {
         return cb(err, res);
@@ -256,7 +263,7 @@ module.exports = recl({
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee","../components/ListComponent.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee","../stores/TreeStore.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/components/ListComponent.coffee":[function(require,module,exports){
-var TreeActions, TreeStore, div, input, recl, textarea, _ref;
+var TreeActions, TreeStore, a, div, li, recl, ul, _ref;
 
 TreeStore = require('../stores/TreeStore.coffee');
 
@@ -264,12 +271,16 @@ TreeActions = require('../actions/TreeActions.coffee');
 
 recl = React.createClass;
 
-_ref = [React.DOM.div, React.DOM.input, React.DOM.textarea], div = _ref[0], input = _ref[1], textarea = _ref[2];
+_ref = [React.DOM.div, React.DOM.a, React.DOM.ul, React.DOM.li], div = _ref[0], a = _ref[1], ul = _ref[2], li = _ref[3];
 
 module.exports = recl({
   stateFromStore: function() {
+    var path, _ref1;
+    path = (_ref1 = this.props.dataPath) != null ? _ref1 : TreeStore.getCurr();
     return {
-      tree: TreeStore.getTree([])
+      cont: TreeStore.getCont(),
+      tree: TreeStore.getTree(path.split("/")),
+      path: path
     };
   },
   componentDidMount: function() {
@@ -282,19 +293,47 @@ module.exports = recl({
     return this.setState(this.stateFromStore());
   },
   componentDidMount: function() {
-    var _ref1, _ref2;
-    if (!((_ref1 = this.state.tree.doc) != null ? (_ref2 = _ref1.hoon) != null ? _ref2.library : void 0 : void 0)) {
-      return TreeActions.getPath(this.props.dataPath);
+    var cont, k, _i, _len, _ref1;
+    cont = true;
+    _ref1 = _.keys(this.state.tree);
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      k = _ref1[_i];
+      if (!this.state.cont[this.state.path + "/" + k]) {
+        cont = false;
+      }
+    }
+    if (!this.state.tree || _.keys(this.state.tree).length === 0 || !cont) {
+      return TreeActions.getPath(this.state.path, true);
     }
   },
   render: function() {
-    var doc, _ref1, _ref2, _ref3;
-    doc = (_ref1 = (_ref2 = this.state.tree.doc) != null ? (_ref3 = _ref2.hoon) != null ? _ref3.library : void 0 : void 0) != null ? _ref1 : [];
-    return div({}, _.each(_.keys(doc), function(v) {
-      return div({
-        key: "lib-" + v
-      }, v);
-    }));
+    var doc, _list, _ref1;
+    doc = (_ref1 = this.state.tree) != null ? _ref1 : [];
+    _list = _.map(_.keys(doc), (function(_this) {
+      return function(v) {
+        var c, prev, _path;
+        _path = _this.state.path + "/" + v;
+        if (_path[0] === "/") {
+          _path = _path.slice(1);
+        }
+        if (_this.props.dataPreview) {
+          c = "preview";
+          prev = _this.state.cont[_path];
+        } else {
+          c = "";
+          prev = v;
+        }
+        return li({}, a({
+          href: "/" + _path,
+          className: c,
+          key: "list-a-" + _path
+        }, prev));
+      };
+    })(this));
+    return ul({
+      className: "list",
+      key: "list-" + this.state.path
+    }, _list);
   }
 });
 
@@ -328,7 +367,7 @@ var rend;
 rend = React.render;
 
 $(function() {
-  var $body, AnchorComponent, BodyComponent, ListComponent, TreeActions, TreePersistence, checkMove, checkScroll, cm, frag, lm, path, up;
+  var $body, AnchorComponent, BodyComponent, ListComponent, TreeActions, TreePersistence, checkMove, checkScroll, cm, frag, lm, lost, path, up;
   window.BodyComponent = BodyComponent;
   $body = $('body');
   console.log('list');
@@ -336,7 +375,16 @@ $(function() {
   AnchorComponent = React.createFactory(require('./components/AnchorComponent.coffee'));
   BodyComponent = React.createFactory(require('./components/BodyComponent.coffee'));
   ListComponent = React.createFactory(require('./components/ListComponent.coffee'));
+  lost = React.createClass({
+    render: function() {
+      console.log(this.props);
+      return div({}, "lost");
+    }
+  });
   window.tree.init(ListComponent);
+  window.tree.reactify = function(str) {
+    return eval(str);
+  };
   TreeActions = require('./actions/TreeActions.coffee');
   TreePersistence = require('./persistence/TreePersistence.coffee');
   path = window.location.pathname.split("/").slice(4);
@@ -712,8 +760,13 @@ var TreeActions;
 TreeActions = require('../actions/TreeActions.coffee');
 
 module.exports = {
-  get: function(path, cb) {
-    return $.get("/gen/main/tree/" + path + ".json", {}, function(data) {
+  get: function(path, kids, cb) {
+    var url;
+    url = "/gen/main/tree/" + path + ".json";
+    if (kids) {
+      url += "?kids";
+    }
+    return $.get(url, {}, function(data) {
       if (cb) {
         return cb(null, data);
       }
@@ -752,10 +805,10 @@ TreeStore = _.extend(EventEmitter.prototype, {
     return _path.split("/");
   },
   pathToObj: function(_path, _obj, kids) {
-    var i, _i, _j, _ref, _ref1, _results;
-    _path = this.pathToArr(_path);
-    for (i = _i = 0, _ref = _path.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-      _obj = _obj[_path[i]] = {};
+    var i, __path, _i, _j, _ref, _ref1, _results;
+    __path = this.pathToArr(_path);
+    for (i = _i = 0, _ref = __path.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+      _obj = _obj[__path[i]] = {};
     }
     if ((kids != null ? kids.length : void 0) > 0) {
       _results = [];
@@ -770,7 +823,11 @@ TreeStore = _.extend(EventEmitter.prototype, {
     tree = _tree;
     if (_path.length > 0) {
       for (i = _i = 0, _ref = _path.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        tree = tree[_path[i]];
+        if (tree[_path[i]]) {
+          tree = tree[_path[i]];
+        } else {
+          return null;
+        }
       }
     }
     return tree;
@@ -779,7 +836,7 @@ TreeStore = _.extend(EventEmitter.prototype, {
     return _curr = path;
   },
   getCurr: function() {
-    return "/" + _curr;
+    return _curr;
   },
   getCont: function() {
     return _cont;
@@ -791,11 +848,25 @@ TreeStore = _.extend(EventEmitter.prototype, {
     return _load;
   },
   loadPath: function(path, body, kids, crum) {
-    var _obj;
-    _cont[path] = body;
+    var k, v, _kids, _obj, _results;
+    if (body) {
+      _cont[path] = window.tree.reactify(body);
+    }
+    _kids = kids[0].body ? _.pluck(kids, "name") : kids;
     _obj = {};
-    this.pathToObj(path, _obj, kids);
-    return _.merge(_tree, _obj);
+    this.pathToObj(path, _obj, _kids);
+    _.merge(_tree, _obj);
+    if (kids[0].body) {
+      _results = [];
+      for (k in kids) {
+        v = kids[k];
+        if (name === "md") {
+          continue;
+        }
+        _results.push(_cont[path + "/" + v.name] = window.tree.reactify(v.body));
+      }
+      return _results;
+    }
   },
   getKids: function() {
     return _.keys(this.getTree(_curr.split("/")));

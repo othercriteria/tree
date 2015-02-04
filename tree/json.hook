@@ -7,6 +7,11 @@
              /%    2
              /_    /react-js/
 ::
+/=    sal    /:    /===/pub/snip
+             /;    |=  a=(map ,@ta cord)  a
+             /%    2
+             /_    /react-js/
+::
 ::::
   ::
 //    /%%/util
@@ -20,7 +25,17 @@
 =+  ~(. util gas)
 ?:  (~(has by qix.gas) %kids)
   %+  joba  %kids
+  =.  pal  (~(del by pal) %md)                                   :: XX haxor
   =-  [%a (turn (~(tap by pal)) -)]
+  |=  [a=span b=cord] 
+  %-  jobe  :~
+    name/s/a
+    body/s/b
+  ==
+?:  (~(has by qix.gas) %snip)
+  %+  joba  %kids
+  =.  sal  (~(del by sal) %md)                                   :: XX haxor
+  =-  [%a (turn (~(tap by sal)) -)]
   |=  [a=span b=cord] 
   %-  jobe  :~
     name/s/a

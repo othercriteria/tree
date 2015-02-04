@@ -2,11 +2,16 @@ TreeStore   = require '../stores/TreeStore.coffee'
 TreeActions = require '../actions/TreeActions.coffee'
 
 recl = React.createClass
-[div,input,textarea] = [React.DOM.div,React.DOM.input,React.DOM.textarea]
+[div,a,ul,li] = [React.DOM.div,React.DOM.a,React.DOM.ul,React.DOM.li]
 
 module.exports = recl
   stateFromStore: -> 
-    tree:TreeStore.getTree([])
+    path = @props.dataPath ? TreeStore.getCurr()
+    {
+      cont:TreeStore.getCont()
+      tree:TreeStore.getTree(path.split("/"))
+      path:path
+    }
 
   componentDidMount: -> 
     TreeStore.addChangeListener @_onChangeStore
@@ -16,9 +21,22 @@ module.exports = recl
   _onChangeStore: ->  @setState @stateFromStore()
 
   componentDidMount: ->
-    if not @state.tree.doc?.hoon?.library
-      TreeActions.getPath @props.dataPath
+    cont = true
+    for k in _.keys @state.tree
+      cont = false if not @state.cont[@state.path+"/"+k]
+    if not @state.tree or _.keys(@state.tree).length is 0 or not cont
+      TreeActions.getPath @state.path,true
 
   render: ->
-    doc = @state.tree.doc?.hoon?.library ? []
-    (div {}, _.each _.keys(doc), (v) -> (div {key:"lib-"+v}, v))
+    doc = @state.tree ? []
+    _list = _.map _.keys(doc), (v) =>
+      _path = @state.path+"/"+v
+      if _path[0] is "/" then _path = _path.slice(1)
+      if @props.dataPreview
+        c = "preview"
+        prev = @state.cont[_path]
+      else
+        c = ""
+        prev = v
+      (li {}, (a {href:"/"+_path,className:c,key:"list-a-"+_path}, prev))
+    (ul {className:"list",key:"list-"+@state.path}, _list)
