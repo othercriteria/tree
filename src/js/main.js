@@ -18,30 +18,48 @@ module.exports = {
       kids: kids
     });
   },
+  loadKids: function(path, kids) {},
+  loadSnip: function(path, snip) {
+    return TreeDispatcher.handleServerAction({
+      type: "snip-load",
+      path: path,
+      snip: snip
+    });
+  },
   getPath: function(path, cb) {
-    var kids, loadPath;
-    kids = false;
-    if (typeof cb === 'boolean') {
-      kids = arguments[1];
+    var query;
+    query = null;
+    if (typeof cb === 'string') {
+      query = arguments[1];
       cb = arguments[2];
     }
     TreeDispatcher.handleViewAction({
       type: "set-load",
       load: true
     });
-    loadPath = this.loadPath;
     if (path.slice(-1) === "/") {
       path = path.slice(0, -1);
     }
     if (path[0] === "/") {
       path = path.slice(1);
     }
-    return TreePersistence.get(path, kids, function(err, res) {
-      loadPath(path, res.body, res.kids);
-      if (cb) {
-        return cb(err, res);
-      }
-    });
+    return TreePersistence.get(path, query, (function(_this) {
+      return function(err, res) {
+        switch (query) {
+          case "snip":
+            _this.loadSnip(path, res.snip);
+            break;
+          case "kids":
+            _this.loadKids(path, res.kids);
+            break;
+          default:
+            _this.loadPath(path, res.body, res.kids, res.snip);
+        }
+        if (cb) {
+          return cb(err, res);
+        }
+      };
+    })(this));
   },
   setCurr: function(path) {
     return TreeDispatcher.handleViewAction({
@@ -278,7 +296,7 @@ module.exports = recl({
     var path, _ref1;
     path = (_ref1 = this.props.dataPath) != null ? _ref1 : TreeStore.getCurr();
     return {
-      cont: TreeStore.getCont(),
+      snip: TreeStore.getSnip(),
       tree: TreeStore.getTree(path.split("/")),
       path: path
     };
@@ -298,27 +316,27 @@ module.exports = recl({
     _ref1 = _.keys(this.state.tree);
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       k = _ref1[_i];
-      if (!this.state.cont[this.state.path + "/" + k]) {
+      if (!this.state.snip[this.state.path + "/" + k]) {
         cont = false;
       }
     }
     if (!this.state.tree || _.keys(this.state.tree).length === 0 || !cont) {
-      return TreeActions.getPath(this.state.path, true);
+      return TreeActions.getPath(this.state.path, "snip");
     }
   },
   render: function() {
     var doc, _list, _ref1;
     doc = (_ref1 = this.state.tree) != null ? _ref1 : [];
-    _list = _.map(_.keys(doc), (function(_this) {
+    _list = _.map(_.keys(doc).sort(), (function(_this) {
       return function(v) {
         var c, prev, _path;
         _path = _this.state.path + "/" + v;
         if (_path[0] === "/") {
           _path = _path.slice(1);
         }
-        if (_this.props.dataPreview) {
+        if (_this.props.dataPreview != null) {
           c = "preview";
-          prev = _this.state.cont[_path];
+          prev = _this.state.snip[_path];
         } else {
           c = "";
           prev = v;
@@ -760,11 +778,11 @@ var TreeActions;
 TreeActions = require('../actions/TreeActions.coffee');
 
 module.exports = {
-  get: function(path, kids, cb) {
+  get: function(path, query, cb) {
     var url;
     url = "/gen/main/tree/" + path + ".json";
-    if (kids) {
-      url += "?kids";
+    if (query) {
+      url += "?" + query;
     }
     return $.get(url, {}, function(data) {
       if (cb) {
@@ -777,7 +795,7 @@ module.exports = {
 
 
 },{"../actions/TreeActions.coffee":"/Users/galen/Documents/Projects/urbit.tree/src/js/actions/TreeActions.coffee"}],"/Users/galen/Documents/Projects/urbit.tree/src/js/stores/TreeStore.coffee":[function(require,module,exports){
-var EventEmitter, MessageDispatcher, TreeStore, _cont, _curr, _load, _tree;
+var EventEmitter, MessageDispatcher, TreeStore, _cont, _curr, _load, _snip, _tree;
 
 EventEmitter = require('events').EventEmitter;
 
@@ -786,6 +804,8 @@ MessageDispatcher = require('../dispatcher/Dispatcher.coffee');
 _tree = {};
 
 _cont = {};
+
+_snip = {};
 
 _load = false;
 
@@ -847,26 +867,44 @@ TreeStore = _.extend(EventEmitter.prototype, {
   getLoad: function() {
     return _load;
   },
-  loadPath: function(path, body, kids, crum) {
-    var k, v, _kids, _obj, _results;
-    if (body) {
-      _cont[path] = window.tree.reactify(body);
-    }
-    _kids = kids[0].body ? _.pluck(kids, "name") : kids;
+  mergePathToTree: function(path, kids) {
+    var _obj;
     _obj = {};
-    this.pathToObj(path, _obj, _kids);
-    _.merge(_tree, _obj);
-    if (kids[0].body) {
-      _results = [];
-      for (k in kids) {
-        v = kids[k];
-        if (name === "md") {
-          continue;
-        }
-        _results.push(_cont[path + "/" + v.name] = window.tree.reactify(v.body));
+    this.pathToObj(path, _obj, kids);
+    return _.merge(_tree, _obj);
+  },
+  getSnip: function() {
+    return _snip;
+  },
+  loadSnip: function(path, snip) {
+    var k, v, _results;
+    this.mergePathToTree(path, _.pluck(snip, "name"));
+    _results = [];
+    for (k in snip) {
+      v = snip[k];
+      if (v.name === "md") {
+        continue;
       }
-      return _results;
+      _results.push(_snip[path + "/" + v.name] = window.tree.reactify(v.body));
     }
+    return _results;
+  },
+  loadKids: function(path, kids) {
+    var k, v, _results;
+    this.mergePathToTree(path, kids);
+    _results = [];
+    for (k in kids) {
+      v = kids[k];
+      if (v.name === "md") {
+        continue;
+      }
+      _results.push(_cont[path + "/" + v.name] = window.tree.reactify(v.body));
+    }
+    return _results;
+  },
+  loadPath: function(path, body, kids) {
+    this.mergePathToTree(path, kids);
+    return _cont[path] = window.tree.reactify(body);
   },
   getKids: function() {
     return _.keys(this.getTree(_curr.split("/")));
@@ -948,7 +986,10 @@ TreeStore.dispatchToken = MessageDispatcher.register(function(payload) {
   action = payload.action;
   switch (action.type) {
     case 'path-load':
-      TreeStore.loadPath(action.path, action.body, action.kids);
+      TreeStore.loadPath(action.path, action.body, action.kids, action.snip);
+      return TreeStore.emitChange();
+    case 'snip-load':
+      TreeStore.loadSnip(action.path, action.snip);
       return TreeStore.emitChange();
     case 'set-curr':
       TreeStore.setCurr(action.path);

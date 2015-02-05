@@ -4,6 +4,7 @@ MessageDispatcher = require '../dispatcher/Dispatcher.coffee'
 
 _tree = {}
 _cont = {}
+_snip = {}
 _load = false
 _curr = ""
 
@@ -44,20 +45,28 @@ TreeStore = _.extend EventEmitter.prototype, {
 
   getLoad: -> _load
 
-  loadPath: (path,body,kids,crum) ->
-    if body
-      _cont[path] = window.tree.reactify body
-
-    _kids =  if kids[0].body then _.pluck(kids,"name") else kids
-    
+  mergePathToTree: (path,kids) ->
     _obj = {}
-    @pathToObj path,_obj,_kids
+    @pathToObj path,_obj,kids
     _.merge _tree,_obj
 
-    if kids[0].body
-      for k,v of kids
-        continue if name is "md"
-        _cont[path+"/"+v.name] = window.tree.reactify v.body
+  getSnip: -> _snip
+
+  loadSnip: (path,snip) ->
+    @mergePathToTree path,_.pluck(snip,"name")
+    for k,v of snip
+      continue if v.name is "md"
+      _snip[path+"/"+v.name] = window.tree.reactify v.body
+
+  loadKids: (path,kids) ->
+    @mergePathToTree path,kids
+    for k,v of kids
+      continue if v.name is "md"
+      _cont[path+"/"+v.name] = window.tree.reactify v.body
+
+  loadPath: (path,body,kids) ->
+    @mergePathToTree path,kids
+    _cont[path] = window.tree.reactify body
 
   getKids: -> _.keys @getTree _curr.split("/")
 
@@ -118,7 +127,10 @@ TreeStore.dispatchToken = MessageDispatcher.register (payload) ->
 
   switch action.type
     when 'path-load'
-      TreeStore.loadPath action.path,action.body,action.kids
+      TreeStore.loadPath action.path,action.body,action.kids,action.snip
+      TreeStore.emitChange()
+    when 'snip-load'
+      TreeStore.loadSnip action.path,action.snip
       TreeStore.emitChange()
     when 'set-curr'
       TreeStore.setCurr action.path

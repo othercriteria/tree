@@ -12,19 +12,33 @@ module.exports =
       body:body
       kids:kids
 
-  getPath: (path,cb) ->                                          # (path,[kids,]cb)
-    kids = false
-    if typeof(cb) is 'boolean'
-      kids = arguments[1]
+  loadKids: (path,kids) ->
+
+  loadSnip: (path,snip) ->
+    TreeDispatcher.handleServerAction
+      type:"snip-load"
+      path:path
+      snip:snip
+
+  getPath: (path,cb) ->                                          # (path,[query,]cb)
+    query = null
+    if typeof(cb) is 'string'
+      query = arguments[1]
       cb = arguments[2]
     TreeDispatcher.handleViewAction
       type:"set-load"
       load:true
-    loadPath = @loadPath
+    
     if path.slice(-1) is "/" then path = path.slice(0,-1)
     if path[0] is "/" then path = path.slice(1)
-    TreePersistence.get path,kids,(err,res) ->
-      loadPath path,res.body,res.kids
+    TreePersistence.get path,query,(err,res) =>
+      switch query
+        when "snip"
+          @loadSnip path,res.snip
+        when "kids"
+          @loadKids path,res.kids
+        else
+          @loadPath path,res.body,res.kids,res.snip
       if cb then cb err,res
 
   setCurr: (path) ->

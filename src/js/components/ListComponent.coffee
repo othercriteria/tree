@@ -8,7 +8,7 @@ module.exports = recl
   stateFromStore: -> 
     path = @props.dataPath ? TreeStore.getCurr()
     {
-      cont:TreeStore.getCont()
+      snip:TreeStore.getSnip()
       tree:TreeStore.getTree(path.split("/"))
       path:path
     }
@@ -23,18 +23,18 @@ module.exports = recl
   componentDidMount: ->
     cont = true
     for k in _.keys @state.tree
-      cont = false if not @state.cont[@state.path+"/"+k]
+      cont = false if not @state.snip[@state.path+"/"+k]
     if not @state.tree or _.keys(@state.tree).length is 0 or not cont
-      TreeActions.getPath @state.path,true
+      TreeActions.getPath @state.path,"snip"
 
   render: ->
     doc = @state.tree ? []
-    _list = _.map _.keys(doc), (v) =>
+    _list = _.map _.keys(doc).sort(), (v) =>
       _path = @state.path+"/"+v
       if _path[0] is "/" then _path = _path.slice(1)
-      if @props.dataPreview
+      if @props.dataPreview?
         c = "preview"
-        prev = @state.cont[_path]
+        prev = @state.snip[_path]
       else
         c = ""
         prev = v

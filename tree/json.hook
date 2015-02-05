@@ -25,7 +25,7 @@
 =+  ~(. util gas)
 ?:  (~(has by qix.gas) %kids)
   %+  joba  %kids
-  =.  pal  (~(del by pal) %md)                                   :: XX haxor
+  =.  pal  (~(del by pal) %md)                                     :: XX haxor
   =-  [%a (turn (~(tap by pal)) -)]
   |=  [a=span b=cord] 
   %-  jobe  :~
@@ -33,7 +33,7 @@
     body/s/b
   ==
 ?:  (~(has by qix.gas) %snip)
-  %+  joba  %kids
+  %+  joba  %snip
   =.  sal  (~(del by sal) %md)                                   :: XX haxor
   =-  [%a (turn (~(tap by sal)) -)]
   |=  [a=span b=cord] 
